@@ -46,14 +46,14 @@ public class SwerveDriveKinematicsConstraint implements TrajectoryConstraint {
   public double getMaxVelocityMetersPerSecond(Pose2d poseMeters, double curvatureRadPerMeter,
                                               double velocityMetersPerSecond) {
     // Represents the velocity of the chassis in the x direction
-    var xVelocity = velocityMetersPerSecond * Math.sin(poseMeters.getRotation().getRadians());
+    var m_xVelocity = velocityMetersPerSecond * Math.sin(poseMeters.getRotation().getRadians());
 
     // Represents the velocity of the chassis in the y direction
-    var yVelocity = velocityMetersPerSecond * Math.cos(poseMeters.getRotation().getRadians());
+    var m_yVelocity = velocityMetersPerSecond * Math.cos(poseMeters.getRotation().getRadians());
 
     // Create an object to represent the current chassis speeds.
-    var chassisSpeeds = new ChassisSpeeds(xVelocity,
-        yVelocity, velocityMetersPerSecond * curvatureRadPerMeter);
+    var chassisSpeeds = new ChassisSpeeds(m_xVelocity,
+        m_yVelocity, velocityMetersPerSecond * curvatureRadPerMeter);
 
     // Get the wheel speeds and normalize them to within the max velocity.
     var wheelSpeeds = m_kinematics.toSwerveModuleStates(chassisSpeeds);
