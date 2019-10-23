@@ -125,40 +125,34 @@ public class DriveSubsystem extends SubsystemBase {
 
   }
 
-/**
-* Gets the front left drive SpeedController.
-*
-* @return the front left drive SpeedController
-*/
-public SpeedController getFrontLeftSpeedController() {
-  return m_frontLeft;
-}
 
-/**
- * Gets the rear left drive SpeedController.
- *
- * @return the rear left drive SpeedController
- */
-public SpeedController getRearLeftSpeedController() {
-  return m_rearLeft;
-}
-/**
- * Gets the front right drive SpeedController.
- *
- * @return the front right drive SpeedController
- */
-public SpeedController getFrontRightSpeedController() {
-  return m_frontRight;
-}
-/**
- * Gets the rear right drive SpeedController.
- *
- * @return the rear right SpeedController
- */
-public SpeedController getRearRightSpeedController() {
-  return m_rearRight;
-}
+  /**
+  * Sets the front left drive SpeedController to a power from -1 to 1.
+  */
+  public void setFrontLeftSpeedController(double power) {
+    m_frontLeft.set(power);
+  }
 
+  /**
+  * Sets the rear left drive SpeedController to a power from -1 to 1.
+  */
+  public void setRearLeftSpeedController(double power) {
+    m_rearLeft.set(power);
+  }
+
+  /**
+  * Sets the front right drive SpeedController to a power from -1 to 1.
+  */
+  public void setFrontRightSpeedController(double power) {
+    m_frontRight.set(power);
+  }
+
+  /**
+  * Sets the rear right drive SpeedController to a power from -1 to 1.
+  */
+  public void setRearRightSpeedController(double power) {
+    m_rearRight.set(power);
+  }
 
 
   /**

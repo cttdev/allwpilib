@@ -114,9 +114,9 @@ public class RobotContainer {
         false
     );
 
-    MecanumFollowerCommand mecanumfollowercommand = new MecanumFollowerCommand(
+    MecanumFollowerCommand mecanumFollowerCommand = new MecanumFollowerCommand(
         exampleTrajectory,
-        m_robotDrive.getPose(),
+        m_robotDrive::getPose,
         
         ksVolts,
         kvVoltSecondsPerMeter,
@@ -137,15 +137,15 @@ public class RobotContainer {
             m_robotDrive.getRearLeftEncoder().getRate(),
             m_robotDrive.getRearRightEncoder().getRate()),
         
-        (frontLeft) -> m_robotDrive.getFrontLeftSpeedController().set(frontLeft/ 12.),
-        (rearLeft) -> m_robotDrive.getRearLeftSpeedController().set(rearLeft/ 12.),
-        (frontRight) -> m_robotDrive.getFrontRightSpeedController().set(frontRight/ 12.),
-        (rearRight) -> m_robotDrive.getRearRightSpeedController().set(rearRight/ 12.),
-        
+        (frontLeft) -> m_robotDrive.setFrontLeftSpeedController(frontLeft/ 12.),
+        (rearLeft) -> m_robotDrive.setRearLeftSpeedController(rearLeft/ 12.),
+        (frontRight) -> m_robotDrive.setFrontRightSpeedController(frontRight/ 12.),
+        (rearRight) -> m_robotDrive.setRearRightSpeedController(rearRight/ 12.),
+
         m_robotDrive
     );
 
     // Run path following command, then stop at the end.
-    return MecanumFollowerCommand.whenFinished(() -> m_robotDrive.tankDrive(0, 0));
+    return mecanumFollowerCommand.whenFinished(() -> m_robotDrive.drive(0.0, 0.0, 0.0, flase));
   }
 }

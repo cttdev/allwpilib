@@ -10,6 +10,7 @@ package edu.wpi.first.wpilibj2.command;
 import static edu.wpi.first.wpilibj.util.ErrorMessages.requireNonNullParam;
 
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -56,10 +57,10 @@ public class MecanumFollowerCommand extends CommandBase {
   private final PIDController m_frontRightController;
   private final PIDController m_rearRightController;
   private final Supplier<MecanumDriveWheelSpeeds> m_currentWheelSpeeds;
-  private final Consumer<Double> m_frontLeftOutput;
-  private final Consumer<Double> m_rearLeftOutput;
-  private final Consumer<Double> m_frontRightOutput;
-  private final Consumer<Double> m_rearRightOutput;
+  private final DoubleConsumer m_frontLeftOutput;
+  private final DoubleConsumer m_rearLeftOutput;
+  private final DoubleConsumer m_frontRightOutput;
+  private final DoubleConsumer m_rearRightOutput;
 
   @SuppressWarnings("PMD.ExcessiveParameterList")
   public MecanumFollowerCommand(Trajectory trajectory,
@@ -80,10 +81,10 @@ public class MecanumFollowerCommand extends CommandBase {
 
                         Supplier<MecanumDriveWheelSpeeds> currentWheelSpeeds,
 
-                        Consumer<Double> frontLeftOutputVolts,
-                        Consumer<Double> rearLeftOutputVolts,
-                        Consumer<Double> frontRightOutputVolts,
-                        Consumer<Double> rearRightOutputVolts,
+                        DoubleConsumer frontLeftOutputVolts,
+                        DoubleConsumer rearLeftOutputVolts,
+                        DoubleConsumer frontRightOutputVolts,
+                        DoubleConsumer rearRightOutputVolts,
                         Subsystem... requirements) {
     m_trajectory = requireNonNullParam(trajectory, "trajectory", "MecanumFollowerCommand");
     m_pose = requireNonNullParam(pose, "pose", "MecanumFollowerCommand");
@@ -119,10 +120,10 @@ public class MecanumFollowerCommand extends CommandBase {
 
                         Supplier<MecanumDriveWheelSpeeds> currentWheelSpeeds,
 
-                        Consumer<Double> frontLeftOutputMetersPerSecond,
-                        Consumer<Double> rearLeftOutputMetersPerSecond,
-                        Consumer<Double> frontRightOutputMetersPerSecond,
-                        Consumer<Double> rearRightOutputMetersPerSecond,
+                        DoubleConsumer frontLeftOutputMetersPerSecond,
+                        DoubleConsumer rearLeftOutputMetersPerSecond,
+                        DoubleConsumer frontRightOutputMetersPerSecond,
+                        DoubleConsumer rearRightOutputMetersPerSecond,
                         Subsystem... requirements) {
     m_trajectory = requireNonNullParam(trajectory, "trajectory", "MecanumFollowerCommand");
     m_pose = requireNonNullParam(pose, "pose", "MecanumFollowerCommand");
