@@ -48,8 +48,8 @@ public class SwerveDriveKinematicsConstraint implements TrajectoryConstraint {
     // Represents the velocity of the chassis in the x direction
     var xVelocity = velocityMetersPerSecond * Math.sin(poseMeters.getRotation().getRadians());
 
-    // Represents the velocity of the chassis in the x direction
-    var yVelocity = velocityMetersPerSecond * Math.sin(poseMeters.getRotation().getRadians());
+    // Represents the velocity of the chassis in the y direction
+    var yVelocity = velocityMetersPerSecond * Math.cos(poseMeters.getRotation().getRadians());
 
     // Create an object to represent the current chassis speeds.
     var chassisSpeeds = new ChassisSpeeds(xVelocity,
