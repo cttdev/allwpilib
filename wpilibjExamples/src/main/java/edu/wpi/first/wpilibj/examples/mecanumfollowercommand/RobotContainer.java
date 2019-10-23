@@ -132,7 +132,7 @@ public class RobotContainer {
         new PIDController(kPRearLeftVel, 0, 0),
         new PIDController(kPRearRightVel, 0, 0),
 
-        new MecanumDriveWheelSpeeds(m_robotDrive.getFrontLeftEncoder().getRate(),
+        () -> new MecanumDriveWheelSpeeds(m_robotDrive.getFrontLeftEncoder().getRate(),
             m_robotDrive.getFrontRightEncoder().getRate(),
             m_robotDrive.getRearLeftEncoder().getRate(),
             m_robotDrive.getRearRightEncoder().getRate()),
@@ -146,6 +146,6 @@ public class RobotContainer {
     );
 
     // Run path following command, then stop at the end.
-    return mecanumFollowerCommand.whenFinished(() -> m_robotDrive.drive(0.0, 0.0, 0.0, flase));
+    return mecanumFollowerCommand.whenFinished(() -> m_robotDrive.drive(0.0, 0.0, 0.0, false));
   }
 }
