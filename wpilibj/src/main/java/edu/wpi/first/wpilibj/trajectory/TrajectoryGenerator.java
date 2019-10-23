@@ -15,11 +15,15 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.MecanumDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj.spline.PoseWithCurvature;
 import edu.wpi.first.wpilibj.spline.Spline;
 import edu.wpi.first.wpilibj.spline.SplineHelper;
 import edu.wpi.first.wpilibj.spline.SplineParameterizer;
 import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveKinematicsConstraint;
+import edu.wpi.first.wpilibj.trajectory.constraint.MecanumDriveKinematicsConstraint;
+import edu.wpi.first.wpilibj.trajectory.constraint.SwerveDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.trajectory.constraint.TrajectoryConstraint;
 
 public final class TrajectoryGenerator {
@@ -208,6 +212,174 @@ public final class TrajectoryGenerator {
     return generateTrajectory(
         start, waypoints, end,
         List.of(new DifferentialDriveKinematicsConstraint(differentialDriveKinematics,
+            maxVelocityMetersPerSecond)),
+        startVelocityMetersPerSecond,
+        endVelocityMetersPerSecond,
+        maxVelocityMetersPerSecond,
+        maxAccelerationMetersPerSecondSq,
+        reversed
+    );
+  }
+
+  /**
+   * Generates a trajectory with the given waypoints and mecanum drive constraints. Use
+   * this method if you just want a constraint such that none of the wheels on your mecanum
+   * drive exceed the specified max velocity. If you desire to impose more constraints, please
+   * use the other overloads.
+   *
+   * @param waypoints                        A vector of points that the trajectory must go through.
+   * @param mecanumDriveKinematics           The MecanumDriveKinematics object that represents
+   *                                         your drivetrain.
+   * @param startVelocityMetersPerSecond     The start velocity for the trajectory.
+   * @param endVelocityMetersPerSecond       The end velocity for the trajectory.
+   * @param maxVelocityMetersPerSecond       The max velocity for the trajectory.
+   * @param maxAccelerationMetersPerSecondSq The max acceleration for the trajectory.
+   * @param reversed                         Whether the robot should move backwards. Note that the
+   *                                         robot will still move from a -&gt; b -&gt; ... -&gt; z
+   *                                         as defined in the waypoints.
+   * @return The trajectory.
+   */
+  public static Trajectory generateTrajectory(
+      List<Pose2d> waypoints,
+      MecanumDriveKinematics mecanumDriveKinematics,
+      double startVelocityMetersPerSecond,
+      double endVelocityMetersPerSecond,
+      double maxVelocityMetersPerSecond,
+      double maxAccelerationMetersPerSecondSq,
+      boolean reversed
+  ) {
+    return generateTrajectory(
+        waypoints,
+        List.of(new MecanumDriveKinematicsConstraint(mecanumDriveKinematics,
+            maxVelocityMetersPerSecond)),
+        startVelocityMetersPerSecond,
+        endVelocityMetersPerSecond,
+        maxVelocityMetersPerSecond,
+        maxAccelerationMetersPerSecondSq,
+        reversed
+    );
+  }
+
+  /**
+   * Generates a trajectory with the given waypoints and mecanum drive constraints. Use
+   * this method if you just want a constraint such that none of the wheels on your mecanum
+   * drive exceed the specified max velocity. If you desire to impose more constraints, please
+   * use the other overloads.
+   *
+   * @param start                            The starting pose for the trajectory.
+   * @param waypoints                        The interior waypoints for the trajectory. The headings
+   *                                         will be determined automatically to ensure continuous
+   *                                         curvature.
+   * @param end                              The ending pose for the trajectory.
+   * @param mecanumDriveKinematics          The MecanumDriveKinematics object that represents
+   *                                         your drivetrain.
+   * @param startVelocityMetersPerSecond     The start velocity for the trajectory.
+   * @param endVelocityMetersPerSecond       The end velocity for the trajectory.
+   * @param maxVelocityMetersPerSecond       The max velocity for the trajectory.
+   * @param maxAccelerationMetersPerSecondSq The max acceleration for the trajectory.
+   * @param reversed                         Whether the robot should move backwards. Note that the
+   *                                         robot will still move from a -&gt; b -&gt; ... -&gt; z
+   *                                         as defined in the waypoints.
+   * @return The trajectory.
+   */
+  public static Trajectory generateTrajectory(
+      Pose2d start,
+      List<Translation2d> waypoints,
+      Pose2d end,
+      MecanumDriveKinematics mecanumDriveKinematics,
+      double startVelocityMetersPerSecond,
+      double endVelocityMetersPerSecond,
+      double maxVelocityMetersPerSecond,
+      double maxAccelerationMetersPerSecondSq,
+      boolean reversed
+  ) {
+    return generateTrajectory(
+        start, waypoints, end,
+        List.of(new MecanumDriveKinematicsConstraint(mecanumDriveKinematics,
+            maxVelocityMetersPerSecond)),
+        startVelocityMetersPerSecond,
+        endVelocityMetersPerSecond,
+        maxVelocityMetersPerSecond,
+        maxAccelerationMetersPerSecondSq,
+        reversed
+    );
+  }
+
+   /**
+   * Generates a trajectory with the given waypoints and swerve drive constraints. Use
+   * this method if you just want a constraint such that none of the modules on your swerve
+   * drive exceed the specified max velocity. If you desire to impose more constraints, please
+   * use the other overloads.
+   *
+   * @param waypoints                        A vector of points that the trajectory must go through.
+   * @param swerveDriveKinematics            The SwerveDriveKinematics object that represents
+   *                                         your drivetrain.
+   * @param startVelocityMetersPerSecond     The start velocity for the trajectory.
+   * @param endVelocityMetersPerSecond       The end velocity for the trajectory.
+   * @param maxVelocityMetersPerSecond       The max velocity for the trajectory.
+   * @param maxAccelerationMetersPerSecondSq The max acceleration for the trajectory.
+   * @param reversed                         Whether the robot should move backwards. Note that the
+   *                                         robot will still move from a -&gt; b -&gt; ... -&gt; z
+   *                                         as defined in the waypoints.
+   * @return The trajectory.
+   */
+  public static Trajectory generateTrajectory(
+      List<Pose2d> waypoints,
+      SwerveDriveKinematics swerveDriveKinematics,
+      double startVelocityMetersPerSecond,
+      double endVelocityMetersPerSecond,
+      double maxVelocityMetersPerSecond,
+      double maxAccelerationMetersPerSecondSq,
+      boolean reversed
+  ) {
+    return generateTrajectory(
+        waypoints,
+        List.of(new SwerveDriveKinematicsConstraint(swerveDriveKinematics,
+            maxVelocityMetersPerSecond)),
+        startVelocityMetersPerSecond,
+        endVelocityMetersPerSecond,
+        maxVelocityMetersPerSecond,
+        maxAccelerationMetersPerSecondSq,
+        reversed
+    );
+  }
+
+  /**
+   * Generates a trajectory with the given waypoints and swerve drive constraints. Use
+   * this method if you just want a constraint such that none of the modules on your swerve
+   * drive exceed the specified max velocity. If you desire to impose more constraints, please
+   * use the other overloads.
+   *
+   * @param start                            The starting pose for the trajectory.
+   * @param waypoints                        The interior waypoints for the trajectory. The headings
+   *                                         will be determined automatically to ensure continuous
+   *                                         curvature.
+   * @param end                              The ending pose for the trajectory.
+   * @param swerveDriveKinematics            The SwerveDriveKinematics object that represents
+   *                                         your drivetrain.
+   * @param startVelocityMetersPerSecond     The start velocity for the trajectory.
+   * @param endVelocityMetersPerSecond       The end velocity for the trajectory.
+   * @param maxVelocityMetersPerSecond       The max velocity for the trajectory.
+   * @param maxAccelerationMetersPerSecondSq The max acceleration for the trajectory.
+   * @param reversed                         Whether the robot should move backwards. Note that the
+   *                                         robot will still move from a -&gt; b -&gt; ... -&gt; z
+   *                                         as defined in the waypoints.
+   * @return The trajectory.
+   */
+  public static Trajectory generateTrajectory(
+      Pose2d start,
+      List<Translation2d> waypoints,
+      Pose2d end,
+      SwerveDriveKinematics swerveDriveKinematics,
+      double startVelocityMetersPerSecond,
+      double endVelocityMetersPerSecond,
+      double maxVelocityMetersPerSecond,
+      double maxAccelerationMetersPerSecondSq,
+      boolean reversed
+  ) {
+    return generateTrajectory(
+        start, waypoints, end,
+        List.of(new SwerveDriveKinematicsConstraint(swerveDriveKinematics,
             maxVelocityMetersPerSecond)),
         startVelocityMetersPerSecond,
         endVelocityMetersPerSecond,
