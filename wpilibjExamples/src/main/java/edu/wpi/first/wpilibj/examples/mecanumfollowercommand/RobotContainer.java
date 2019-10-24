@@ -122,6 +122,8 @@ public class RobotContainer {
         new PIDController(kPYController, 0, 0),
         new ProfiledPIDController(kPThetaController, 0, 0, kThetaControllerConstraints),
 
+        kMaxSpeedMetersPerSecond,
+
         new PIDController(kPFrontLeftVel, 0, 0),
         new PIDController(kPFrontRightVel, 0, 0),
         new PIDController(kPRearLeftVel, 0, 0),

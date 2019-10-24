@@ -52,6 +52,7 @@ public class MecanumFollowerCommand extends CommandBase {
   private final PIDController m_xController;
   private final PIDController m_yController;
   private final ProfiledPIDController m_thetaController;
+  private final double m_maxWheelVelocityMetersPerSecond;
   private final PIDController m_frontLeftController;
   private final PIDController m_rearLeftController;
   private final PIDController m_frontRightController;
@@ -73,6 +74,8 @@ public class MecanumFollowerCommand extends CommandBase {
                         PIDController xController,
                         PIDController yController,
                         ProfiledPIDController thetaController,
+
+                        double maxWheelVelocityMetersPerSecond,
 
                         PIDController frontLeftController,
                         PIDController rearLeftController,
@@ -97,6 +100,8 @@ public class MecanumFollowerCommand extends CommandBase {
     m_yController = requireNonNullParam(yController, "yController", "MecanumFollowerCommand");
     m_thetaController = requireNonNullParam(thetaController, "thetaController", "MecanumFollowerCommand");
 
+    m_maxWheelVelocityMetersPerSecond = requireNonNullParam(maxWheelVelocityMetersPerSecond, "maxWheelVelocityMetersPerSecond", "MecanumFollowerCommand");
+    
     m_frontLeftController = requireNonNullParam(frontLeftController, "frontLeftController", "MecanumFollowerCommand");
     m_rearLeftController = requireNonNullParam(rearLeftController, "rearLeftController", "MecanumFollowerCommand");
     m_frontRightController = requireNonNullParam(frontRightController, "frontRightController", "MecanumFollowerCommand");
@@ -118,6 +123,8 @@ public class MecanumFollowerCommand extends CommandBase {
                         PIDController yController,
                         ProfiledPIDController thetaController,
 
+                        double maxWheelVelocityMetersPerSecond,
+
                         Supplier<MecanumDriveWheelSpeeds> currentWheelSpeeds,
 
                         DoubleConsumer frontLeftOutputMetersPerSecond,
@@ -135,6 +142,8 @@ public class MecanumFollowerCommand extends CommandBase {
     m_xController = requireNonNullParam(xController, "xController", "MecanumFollowerCommand");
     m_yController = requireNonNullParam(yController, "xController", "MecanumFollowerCommand");
     m_thetaController = requireNonNullParam(thetaController, "thetaController", "MecanumFollowerCommand");
+
+    m_maxWheelVelocityMetersPerSecond = requireNonNullParam(maxWheelVelocityMetersPerSecond, "maxWheelVelocityMetersPerSecond", "MecanumFollowerCommand");
 
     m_frontLeftController = null;
     m_rearLeftController = null;
@@ -194,6 +203,8 @@ public class MecanumFollowerCommand extends CommandBase {
     var targetChassisSpeeds = new ChassisSpeeds(targetXVel, targetYVel, targetAngularVel);
 
     var targetWheelSpeeds = m_kinematics.toWheelSpeeds(targetChassisSpeeds);
+
+    targetWheelSpeeds.normalize(m_maxWheelVelocityMetersPerSecond);
 
     var frontLeftSpeedSetpoint = targetWheelSpeeds.frontLeftMetersPerSecond;
     var rearLeftSpeedSetpoint = targetWheelSpeeds.rearLeftMetersPerSecond;
