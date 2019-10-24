@@ -21,20 +21,20 @@ import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile;
  */
 public final class Constants {
   public static final class DriveConstants {
-    public static final int kfrontLeftMotorPort = 0;
-    public static final int krearLeftMotorPort = 1;
-    public static final int kfrontRightMotorPort = 2;
-    public static final int krearRightMotorPort = 3;
+    public static final int kFrontLeftMotorPort = 0;
+    public static final int kRearLeftMotorPort = 1;
+    public static final int kFrontRightMotorPort = 2;
+    public static final int kRearRightMotorPort = 3;
 
-    public static final int[] kfrontLeftEncoderPorts = new int[]{0, 1};
-    public static final int[] krearLeftEncoderPorts = new int[]{2, 3};
-    public static final int[] kfrontRightEncoderPorts = new int[]{4, 5};
-    public static final int[] krearRightEncoderPorts = new int[]{5, 6};
+    public static final int[] kFrontLeftEncoderPorts = new int[]{0, 1};
+    public static final int[] kRearLeftEncoderPorts = new int[]{2, 3};
+    public static final int[] kFrontRightEncoderPorts = new int[]{4, 5};
+    public static final int[] kRearRightEncoderPorts = new int[]{5, 6};
     
-    public static final boolean kfrontLeftEncoderReversed = false;
-    public static final boolean krearLeftEncoderReversed = true;
-    public static final boolean kfrontRightEncoderReversed = false;
-    public static final boolean krearRightEncoderReversed = true;
+    public static final boolean kFrontLeftEncoderReversed = false;
+    public static final boolean kRearLeftEncoderReversed = true;
+    public static final boolean kFrontRightEncoderReversed = false;
+    public static final boolean kRearRightEncoderReversed = true;
 
     public static final double kTrackWidth = 0.5;//Dstance between centers of right and left wheels on robot
     public static final double kTrackLength = 0.7;//Distance between front and back wheels on robot
@@ -82,7 +82,7 @@ public final class Constants {
     public static final double kPThetaController = .5;
     
     //Constraint for the motion profilied robot angle controller
-    public static final TrapezoidProfile.Constraints kthetaControllerConstraints = new TrapezoidProfile.Constraints(kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+    public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
 
   }
 }

@@ -41,11 +41,6 @@ public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
 
-  private double m_frontLeftOutput;
-  private double m_rearLeftOutput;
-  private double m_frontRightOutput;
-  private double m_rearRightOutput;
-
   // The driver's controller
   XboxController m_driverController = new XboxController(kDriverControllerPort);
 
@@ -114,7 +109,7 @@ public class RobotContainer {
         false
     );
 
-    MecanumFollowerCommand mecanumFollowerCommand = new MecanumFollowerCommand(
+    MecanumFollowerCommand m_mecanumFollowerCommand = new MecanumFollowerCommand(
         exampleTrajectory,
         m_robotDrive::getPose,
         
@@ -125,7 +120,7 @@ public class RobotContainer {
 
         new PIDController(kPXController, 0, 0),
         new PIDController(kPYController, 0, 0),
-        new ProfiledPIDController(kPThetaController, 0, 0, kthetaControllerConstraints),
+        new ProfiledPIDController(kPThetaController, 0, 0, kThetaControllerConstraints),
 
         new PIDController(kPFrontLeftVel, 0, 0),
         new PIDController(kPFrontRightVel, 0, 0),
@@ -146,6 +141,6 @@ public class RobotContainer {
     );
 
     // Run path following command, then stop at the end.
-    return mecanumFollowerCommand.whenFinished(() -> m_robotDrive.drive(0.0, 0.0, 0.0, false));
+    return m_mecanumFollowerCommand.whenFinished(() -> m_robotDrive.drive(0.0, 0.0, 0.0, false));
   }
 }

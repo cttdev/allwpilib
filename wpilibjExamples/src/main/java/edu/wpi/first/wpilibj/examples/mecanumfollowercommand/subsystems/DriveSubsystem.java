@@ -7,26 +7,11 @@
 
 package edu.wpi.first.wpilibj.examples.mecanumfollowercommand.subsystems;
 
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kDriveKinematics;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kEncoderDistancePerPulse;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kGyroReversed;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kfrontLeftEncoderPorts;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kfrontLeftEncoderReversed;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kfrontLeftMotorPort;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kfrontRightEncoderPorts;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kfrontRightEncoderReversed;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.kfrontRightMotorPort;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.krearLeftEncoderPorts;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.krearLeftEncoderReversed;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.krearLeftMotorPort;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.krearRightEncoderPorts;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.krearRightEncoderReversed;
-import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.krearRightMotorPort;
+import static edu.wpi.first.wpilibj.examples.mecanumfollowercommand.Constants.DriveConstants.*;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PWMVictorSPX;
-import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -36,29 +21,29 @@ import edu.wpi.first.wpilibj.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
-  private final PWMVictorSPX m_frontLeft = new PWMVictorSPX(kfrontLeftMotorPort);
-  private final PWMVictorSPX m_rearLeft = new PWMVictorSPX(krearLeftMotorPort);
-  private final PWMVictorSPX m_frontRight = new PWMVictorSPX(kfrontRightMotorPort);
-  private final PWMVictorSPX m_rearRight = new PWMVictorSPX(krearRightMotorPort);
+  private final PWMVictorSPX m_frontLeft = new PWMVictorSPX(kFrontLeftMotorPort);
+  private final PWMVictorSPX m_rearLeft = new PWMVictorSPX(kRearLeftMotorPort);
+  private final PWMVictorSPX m_frontRight = new PWMVictorSPX(kFrontRightMotorPort);
+  private final PWMVictorSPX m_rearRight = new PWMVictorSPX(kRearRightMotorPort);
 
 
   private final MecanumDrive m_drive = new MecanumDrive(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
   // The front-left-side drive encoder
   private final Encoder m_frontLeftEncoder =
-      new Encoder(kfrontLeftEncoderPorts[0], kfrontLeftEncoderPorts[1], kfrontLeftEncoderReversed);
+      new Encoder(kFrontLeftEncoderPorts[0], kFrontLeftEncoderPorts[1], kFrontLeftEncoderReversed);
 
   // The rear-left-side drive encoder
   private final Encoder m_rearLeftEncoder =
-      new Encoder(krearLeftEncoderPorts[0], krearLeftEncoderPorts[1], krearLeftEncoderReversed);
+      new Encoder(kRearLeftEncoderPorts[0], kRearLeftEncoderPorts[1], kRearLeftEncoderReversed);
 
   // The front-right--side drive encoder
   private final Encoder m_frontRightEncoder =
-      new Encoder(kfrontRightEncoderPorts[0], kfrontRightEncoderPorts[1], kfrontRightEncoderReversed);
+      new Encoder(kFrontRightEncoderPorts[0], kFrontRightEncoderPorts[1], kFrontRightEncoderReversed);
 
   // The rear-right-side drive encoder
   private final Encoder m_rearRightEncoder =
-  new Encoder(krearRightEncoderPorts[0], krearRightEncoderPorts[1], krearRightEncoderReversed);
+  new Encoder(kRearRightEncoderPorts[0], kRearRightEncoderPorts[1], kRearRightEncoderReversed);
 
   // The gyro sensor
   private final Gyro m_gyro = new ADXRS450_Gyro();
