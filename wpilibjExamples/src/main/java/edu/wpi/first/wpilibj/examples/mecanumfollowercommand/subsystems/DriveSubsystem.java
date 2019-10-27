@@ -93,9 +93,10 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Method to drive the robot.
+   * Drives the robot at given x, y and theta speeds. Speeds range from [-1, 1] and the linear
+   * speeds have no effect on the angular speed.
    *
-   * @param xSpeed        Speed of the robot in the x direction (forward).
+   * @param xSpeed        Speed of the robot in the x direction (forward/backwards).
    * @param ySpeed        Speed of the robot in the y direction (sideways).
    * @param rot           Angular rate of the robot.
    * @param fieldRelative Whether the provided x and y speeds are relative to the field.
@@ -103,7 +104,7 @@ public class DriveSubsystem extends SubsystemBase {
   @SuppressWarnings("ParameterName")
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     if ( fieldRelative ){
-      m_drive.driveCartesian(ySpeed, xSpeed, rot, m_gyro.getAngle());
+      m_drive.driveCartesian(ySpeed, xSpeed, rot, -m_gyro.getAngle());
     } else {
       m_drive.driveCartesian(ySpeed, xSpeed, rot);
     }

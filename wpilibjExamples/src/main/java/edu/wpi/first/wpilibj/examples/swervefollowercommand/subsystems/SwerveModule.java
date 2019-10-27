@@ -27,7 +27,7 @@ public class SwerveModule {
 
   private final ProfiledPIDController m_turningPIDController
       = new ProfiledPIDController(kPModuleTurningController, 0, 0,
-      new TrapezoidProfile.Constraints(kMaxModuleSpeedMetersPerSecond, kMaxModuleAngularSpeedRadiansPerSecond));
+      new TrapezoidProfile.Constraints(kMaxModuleAngularSpeedRadiansPerSecond, kMaxModuleAngularAccelerationRadiansPerSecondSquared));
 
   /**
    * Constructs a SwerveModule.

@@ -8,9 +8,10 @@
 package edu.wpi.first.wpilibj.examples.swervefollowercommand.subsystems;
 
 import static edu.wpi.first.wpilibj.examples.swervefollowercommand.Constants.DriveConstants.*;
-import static edu.wpi.first.wpilibj.examples.swervefollowercommand.Constants.ModuleConstants.kMaxModuleSpeedMetersPerSecond;
+import static edu.wpi.first.wpilibj.examples.swervefollowercommand.Constants.AutoConstants.kMaxSpeedMetersPerSecond;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.examples.frisbeebot.Constants.AutoConstants;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
@@ -107,10 +108,10 @@ public class DriveSubsystem extends SubsystemBase {
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     var swerveModuleStates = kDriveKinematics.toSwerveModuleStates(
         fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
-            xSpeed, ySpeed, rot, new Rotation2d(m_gyro.getAngle()))
+            xSpeed, ySpeed, rot, new Rotation2d(-m_gyro.getAngle()))
             : new ChassisSpeeds(xSpeed, ySpeed, rot)
     );
-    SwerveDriveKinematics.normalizeWheelSpeeds(swerveModuleStates, kMaxModuleSpeedMetersPerSecond);
+    SwerveDriveKinematics.normalizeWheelSpeeds(swerveModuleStates, kMaxSpeedMetersPerSecond);
     m_frontLeft.setDesiredState(swerveModuleStates[0]);
     m_frontRight.setDesiredState(swerveModuleStates[1]);
     m_rearLeft.setDesiredState(swerveModuleStates[2]);
@@ -121,7 +122,7 @@ public class DriveSubsystem extends SubsystemBase {
   * Sets the swerve ModuleStates.
   */
   public void setModuleStates(SwerveModuleState[] desiredStates) {
-    SwerveDriveKinematics.normalizeWheelSpeeds(desiredStates, kMaxModuleSpeedMetersPerSecond);
+    SwerveDriveKinematics.normalizeWheelSpeeds(desiredStates, kMaxSpeedMetersPerSecond);
     m_frontLeft.setDesiredState(desiredStates[0]);
     m_frontRight.setDesiredState(desiredStates[1]);
     m_rearLeft.setDesiredState(desiredStates[2]);

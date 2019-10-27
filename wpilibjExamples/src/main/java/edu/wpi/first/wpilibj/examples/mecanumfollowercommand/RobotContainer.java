@@ -125,8 +125,8 @@ public class RobotContainer {
         kMaxSpeedMetersPerSecond,
 
         new PIDController(kPFrontLeftVel, 0, 0),
-        new PIDController(kPFrontRightVel, 0, 0),
         new PIDController(kPRearLeftVel, 0, 0),
+        new PIDController(kPFrontRightVel, 0, 0),
         new PIDController(kPRearRightVel, 0, 0),
 
         () -> new MecanumDriveWheelSpeeds(m_robotDrive.getFrontLeftEncoder().getRate(),
