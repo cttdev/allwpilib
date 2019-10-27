@@ -394,4 +394,30 @@
     "gradlebase": "java",
     "mainclass": "Main"
   }
+  {
+    "name:": "MecanumFollowerCommand",
+    "description": "An example command-based robot demonstrating the use of 3 PID controllers to follow a pregenerated trajectory.",
+    "tags": [
+      "MecanumFollowerCommand",
+      "PID",
+      "Trajectory",
+      "Path following"
+    ],
+    "foldername": "mecanumfollowercommand",
+    "gradlebase": "java",
+    "mainclass": "Main"
+  },
+  {
+    "name:": "SwerveFollowerCommand",
+    "description": "An example command-based robot demonstrating the use of 3 PID controllers to follow a pregenerated trajectory.",
+    "tags": [
+      "SwerveFollowerCommand",
+      "PID",
+      "Trajectory",
+      "Path following"
+    ],
+    "foldername": "swervefollowercommand",
+    "gradlebase": "java",
+    "mainclass": "Main"
+  }
 ]

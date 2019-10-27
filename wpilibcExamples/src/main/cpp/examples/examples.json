@@ -368,5 +368,29 @@
     ],
     "foldername": "RamseteCommand",
     "gradlebase": "cpp"
+  },
+  {
+    "name:": "MecanumFollowerCommand",
+    "description": "An example command-based robot demonstrating the use of 3 PID controllers to follow a pregenerated trajectory.",
+    "tags": [
+      "MecanumFollowerCommand",
+      "PID",
+      "Trajectory",
+      "Path following"
+    ],
+    "foldername": "MecanumFollowerCommand",
+    "gradlebase": "cpp"
+  },
+  {
+    "name:": "SwerveFollowerCommand",
+    "description": "An example command-based robot demonstrating the use of 3 PID controllers to follow a pregenerated trajectory.",
+    "tags": [
+      "SwerveFollowerCommand",
+      "PID",
+      "Trajectory",
+      "Path following"
+    ],
+    "foldername": "SwerveFollowerCommand",
+    "gradlebase": "cpp"
   }
 ]
