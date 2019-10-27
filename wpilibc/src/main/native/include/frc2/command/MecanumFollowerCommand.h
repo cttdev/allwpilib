@@ -94,6 +94,7 @@ class MecanumFollowerCommand
       frc::MecanumDriveKinematics kinematics, frc2::PIDController xController,
       frc2::PIDController yController,
       frc::ProfiledPIDController thetaController,
+      units::meters_per_second_t MaxWheelVelocityMetersPerSecond,
       std::function<frc::MecanumDriveWheelSpeeds()> currentWheelSpeeds,
       frc2::PIDController frontLeftController,
       frc2::PIDController rearLeftController,
@@ -125,6 +126,7 @@ class MecanumFollowerCommand
       frc::MecanumDriveKinematics kinematics, frc2::PIDController xController,
       frc2::PIDController yController,
       frc::ProfiledPIDController thetaController,
+      units::meters_per_second_t MaxWheelVelocityMetersPerSecond,
       std::function<void(units::meters_per_second_t, units::meters_per_second_t,
                          units::meters_per_second_t,
                          units::meters_per_second_t)>
@@ -154,6 +156,7 @@ class MecanumFollowerCommand
   std::unique_ptr<frc2::PIDController> m_xController;
   std::unique_ptr<frc2::PIDController> m_yController;
   std::unique_ptr<frc::ProfiledPIDController> m_thetaController;
+  const units::meters_per_second_t m_maxWheelVelocityMetersPerSecond;
   std::unique_ptr<frc2::PIDController> m_frontLeftController;
   std::unique_ptr<frc2::PIDController> m_rearLeftController;
   std::unique_ptr<frc2::PIDController> m_frontRightController;

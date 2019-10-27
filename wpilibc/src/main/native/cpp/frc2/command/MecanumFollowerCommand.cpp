@@ -21,6 +21,7 @@ MecanumFollowerCommand::MecanumFollowerCommand(
     units::unit_t<voltsecondssquaredpermeter> ka,
     frc::MecanumDriveKinematics kinematics, frc2::PIDController xController,
     frc2::PIDController yController, frc::ProfiledPIDController thetaController,
+    units::meters_per_second_t MaxWheelVelocityMetersPerSecond,
     std::function<frc::MecanumDriveWheelSpeeds()> currentWheelSpeeds,
     frc2::PIDController frontLeftController,
     frc2::PIDController rearLeftController,
@@ -40,6 +41,7 @@ MecanumFollowerCommand::MecanumFollowerCommand(
       m_yController(std::make_unique<frc2::PIDController>(yController)),
       m_thetaController(
           std::make_unique<frc::ProfiledPIDController>(thetaController)),
+      m_maxWheelVelocityMetersPerSecond(MaxWheelVelocityMetersPerSecond),
       m_frontLeftController(
           std::make_unique<frc2::PIDController>(frontLeftController)),
       m_rearLeftController(
@@ -57,6 +59,7 @@ MecanumFollowerCommand::MecanumFollowerCommand(
     frc::Trajectory trajectory, std::function<frc::Pose2d()> pose,
     frc::MecanumDriveKinematics kinematics, frc2::PIDController xController,
     frc2::PIDController yController, frc::ProfiledPIDController thetaController,
+    units::meters_per_second_t MaxWheelVelocityMetersPerSecond,
     std::function<void(units::meters_per_second_t, units::meters_per_second_t,
                        units::meters_per_second_t, units::meters_per_second_t)>
         output,
@@ -71,6 +74,7 @@ MecanumFollowerCommand::MecanumFollowerCommand(
       m_yController(std::make_unique<frc2::PIDController>(yController)),
       m_thetaController(
           std::make_unique<frc::ProfiledPIDController>(thetaController)),
+      m_maxWheelVelocityMetersPerSecond(MaxWheelVelocityMetersPerSecond),
       m_outputVel(output) {
   AddRequirements(requirements);
 }
@@ -123,6 +127,8 @@ void MecanumFollowerCommand::Execute() {
       angular_velocity::radians_per_second_t(0) /*targetAngularVel*/};
 
   auto targetWheelSpeeds = m_kinematics.ToWheelSpeeds(targetChassisSpeeds);
+
+  targetWheelSpeeds.Normalize(m_maxWheelVelocityMetersPerSecond);
 
   auto frontLeftSpeedSetpoint = targetWheelSpeeds.frontLeft;
   auto rearLeftSpeedSetpoint = targetWheelSpeeds.rearLeft;
