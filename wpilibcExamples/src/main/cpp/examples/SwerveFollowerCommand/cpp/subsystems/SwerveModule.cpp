@@ -6,25 +6,23 @@
 /*----------------------------------------------------------------------------*/
 
 #include "subsystems/SwerveModule.h"
-#include "Constants.h"
 
 #include <frc/geometry/Rotation2d.h>
 #include <wpi/math>
 
+#include "Constants.h"
 
-SwerveModule::SwerveModule(int driveMotorChannel,
-                           int turningMotorChannel,
-                          std::array<int, 2> driveEncoderPorts,
-                          std::array<int, 2> turningEncoderPorts,
-                          bool driveEncoderReversed,
-                          bool turningEncoderReversed)
+SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel,
+                           std::array<int, 2> driveEncoderPorts,
+                           std::array<int, 2> turningEncoderPorts,
+                           bool driveEncoderReversed,
+                           bool turningEncoderReversed)
     : m_driveMotor(driveMotorChannel),
-    m_turningMotor(turningMotorChannel),
-    m_driveEncoder(driveEncoderPorts[0], driveEncoderPorts[1]),
-    m_turningEncoder(turningEncoderPorts[0], turningEncoderPorts[1]),
-    m_reverseDriveEncoder(driveEncoderReversed),
-    m_reverseTurningEncoder(turningEncoderReversed) {
-
+      m_turningMotor(turningMotorChannel),
+      m_driveEncoder(driveEncoderPorts[0], driveEncoderPorts[1]),
+      m_turningEncoder(turningEncoderPorts[0], turningEncoderPorts[1]),
+      m_reverseDriveEncoder(driveEncoderReversed),
+      m_reverseTurningEncoder(turningEncoderReversed) {
   // Set the distance per pulse for the drive encoder. We can simply use the
   // distance traveled for one rotation of the wheel divided by the encoder
   // resolution.
@@ -33,7 +31,8 @@ SwerveModule::SwerveModule(int driveMotorChannel,
   // Set the distance (in this case, angle) per pulse for the turning encoder.
   // This is the the angle through an entire rotation (2 * wpi::math::pi)
   // divided by the encoder resolution.
-  m_turningEncoder.SetDistancePerPulse(ModuleConstants::kEncoderDistancePerPulse);
+  m_turningEncoder.SetDistancePerPulse(
+      ModuleConstants::kEncoderDistancePerPulse);
 
   // Limit the PID Controller's input range between -pi and pi and set the input
   // to be continuous.

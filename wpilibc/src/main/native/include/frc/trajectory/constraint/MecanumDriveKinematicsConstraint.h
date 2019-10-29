@@ -7,8 +7,9 @@
 
 #pragma once
 
-#include <units/units.h>
 #include <cmath>
+
+#include <units/units.h>
 
 #include "frc/kinematics/MecanumDriveKinematics.h"
 #include "frc/trajectory/constraint/TrajectoryConstraint.h"
@@ -23,7 +24,7 @@ namespace frc {
 class MecanumDriveKinematicsConstraint : public TrajectoryConstraint {
  public:
   MecanumDriveKinematicsConstraint(MecanumDriveKinematics kinematics,
-                                        units::meters_per_second_t maxSpeed);
+                                   units::meters_per_second_t maxSpeed);
 
   units::meters_per_second_t MaxVelocity(
       const Pose2d& pose, curvature_t curvature,

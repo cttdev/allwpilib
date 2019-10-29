@@ -112,7 +112,7 @@ public class RobotContainer {
     MecanumFollowerCommand m_mecanumFollowerCommand = new MecanumFollowerCommand(
         exampleTrajectory,
         m_robotDrive::getPose,
-        
+
         ksVolts,
         kvVoltSecondsPerMeter,
         kaVoltSecondsSquaredPerMeter,
@@ -133,7 +133,7 @@ public class RobotContainer {
             m_robotDrive.getFrontRightEncoder().getRate(),
             m_robotDrive.getRearLeftEncoder().getRate(),
             m_robotDrive.getRearRightEncoder().getRate()),
-        
+
         (frontLeft) -> m_robotDrive.setFrontLeftSpeedController(frontLeft/ 12.),
         (rearLeft) -> m_robotDrive.setRearLeftSpeedController(rearLeft/ 12.),
         (frontRight) -> m_robotDrive.setFrontRightSpeedController(frontRight/ 12.),

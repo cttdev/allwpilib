@@ -30,7 +30,7 @@ public final class Constants {
     public static final int[] kRearLeftEncoderPorts = new int[]{2, 3};
     public static final int[] kFrontRightEncoderPorts = new int[]{4, 5};
     public static final int[] kRearRightEncoderPorts = new int[]{5, 6};
-    
+
     public static final boolean kFrontLeftEncoderReversed = false;
     public static final boolean kRearLeftEncoderReversed = true;
     public static final boolean kFrontRightEncoderReversed = false;
@@ -84,7 +84,7 @@ public final class Constants {
     public static final double kPXController = .5;
     public static final double kPYController = .5;
     public static final double kPThetaController = .5;
-    
+
     //Constraint for the motion profilied robot angle controller
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
 

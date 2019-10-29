@@ -119,9 +119,8 @@ Trajectory TrajectoryGenerator::GenerateTrajectory(
     units::meters_per_second_t maxVelocity,
     units::meters_per_second_squared_t maxAcceleration, bool reversed) {
   std::vector<std::unique_ptr<TrajectoryConstraint>> constraints;
-  constraints.emplace_back(
-      std::make_unique<MecanumDriveKinematicsConstraint>(
-          mecanumDriveKinematics, maxVelocity));
+  constraints.emplace_back(std::make_unique<MecanumDriveKinematicsConstraint>(
+      mecanumDriveKinematics, maxVelocity));
 
   return GenerateTrajectory(waypoints, std::move(constraints), startVelocity,
                             endVelocity, maxVelocity, maxAcceleration,
@@ -130,16 +129,14 @@ Trajectory TrajectoryGenerator::GenerateTrajectory(
 
 Trajectory TrajectoryGenerator::GenerateTrajectory(
     const Pose2d& start, const std::vector<Translation2d>& waypoints,
-    const Pose2d& end,
-    const MecanumDriveKinematics& mecanumDriveKinematics,
+    const Pose2d& end, const MecanumDriveKinematics& mecanumDriveKinematics,
     units::meters_per_second_t startVelocity,
     units::meters_per_second_t endVelocity,
     units::meters_per_second_t maxVelocity,
     units::meters_per_second_squared_t maxAcceleration, bool reversed) {
   std::vector<std::unique_ptr<TrajectoryConstraint>> constraints;
-  constraints.emplace_back(
-      std::make_unique<MecanumDriveKinematicsConstraint>(
-          mecanumDriveKinematics, maxVelocity));
+  constraints.emplace_back(std::make_unique<MecanumDriveKinematicsConstraint>(
+      mecanumDriveKinematics, maxVelocity));
 
   return GenerateTrajectory(start, waypoints, end, std::move(constraints),
                             startVelocity, endVelocity, maxVelocity,
@@ -155,9 +152,8 @@ Trajectory TrajectoryGenerator::GenerateTrajectory(
     units::meters_per_second_t maxVelocity,
     units::meters_per_second_squared_t maxAcceleration, bool reversed) {
   std::vector<std::unique_ptr<TrajectoryConstraint>> constraints;
-  constraints.emplace_back(
-      std::make_unique<SwerveDriveKinematicsConstraint>(
-          swerveDriveKinematics, maxVelocity));
+  constraints.emplace_back(std::make_unique<SwerveDriveKinematicsConstraint>(
+      swerveDriveKinematics, maxVelocity));
 
   return GenerateTrajectory(waypoints, std::move(constraints), startVelocity,
                             endVelocity, maxVelocity, maxAcceleration,
@@ -174,9 +170,8 @@ Trajectory TrajectoryGenerator::GenerateTrajectory(
     units::meters_per_second_t maxVelocity,
     units::meters_per_second_squared_t maxAcceleration, bool reversed) {
   std::vector<std::unique_ptr<TrajectoryConstraint>> constraints;
-  constraints.emplace_back(
-      std::make_unique<SwerveDriveKinematicsConstraint>(
-          swerveDriveKinematics, maxVelocity));
+  constraints.emplace_back(std::make_unique<SwerveDriveKinematicsConstraint>(
+      swerveDriveKinematics, maxVelocity));
 
   return GenerateTrajectory(start, waypoints, end, std::move(constraints),
                             startVelocity, endVelocity, maxVelocity,

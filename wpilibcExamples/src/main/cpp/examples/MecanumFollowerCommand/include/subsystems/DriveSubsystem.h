@@ -32,24 +32,22 @@ class DriveSubsystem : public frc2::SubsystemBase {
   // Subsystem methods go here.
 
   /**
-   * Drives the robot at given x, y and theta speeds. Speeds range from [-1, 1] and the linear
-   * speeds have no effect on the angular speed.
+   * Drives the robot at given x, y and theta speeds. Speeds range from [-1, 1]
+   * and the linear speeds have no effect on the angular speed.
    *
-   * @param xSpeed        Speed of the robot in the x direction (forward/backwards).
+   * @param xSpeed        Speed of the robot in the x direction
+   * (forward/backwards).
    * @param ySpeed        Speed of the robot in the y direction (sideways).
    * @param rot           Angular rate of the robot.
-   * @param fieldRelative Whether the provided x and y speeds are relative to the field. 
+   * @param fieldRelative Whether the provided x and y speeds are relative to
+   * the field.
    */
-  void Drive(double xSpeed,
-    double ySpeed,
-    double rot,
-    bool feildRelative);
+  void Drive(double xSpeed, double ySpeed, double rot, bool feildRelative);
 
   /**
    * Resets the drive encoders to currently read a position of 0.
    */
   void ResetEncoders();
-
 
   /**
    * Gets the front left drive encoder.
@@ -65,7 +63,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
    */
   frc::Encoder& GetRearLeftEncoder();
 
-    /**
+  /**
    * Gets the front right drive encoder.
    *
    * @return the front right drive encoder
@@ -80,10 +78,10 @@ class DriveSubsystem : public frc2::SubsystemBase {
   frc::Encoder& GetRearRightEncoder();
 
   /**
-  * Sets the drive SpeedControllers to a power from -1 to 1.
-  */
-  void SetSpeedControllers(double frontLeftPower, double rearLeftPower, double frontRightPower, double rearRightPower);
-
+   * Sets the drive SpeedControllers to a power from -1 to 1.
+   */
+  void SetSpeedControllers(double frontLeftPower, double rearLeftPower,
+                           double frontRightPower, double rearRightPower);
 
   /**
    * Sets the max output of the drive. Useful for scaling the drive to drive
@@ -135,7 +133,6 @@ class DriveSubsystem : public frc2::SubsystemBase {
   frc::PWMVictorSPX m_rearLeft;
   frc::PWMVictorSPX m_frontRight;
   frc::PWMVictorSPX m_rearRight;
-
 
   // The robot's drive
   frc::MecanumDrive m_drive{m_frontLeft, m_rearLeft, m_frontRight, m_rearRight};

@@ -11,18 +11,19 @@ using namespace frc;
 
 template <int NumModules>
 SwerveDriveKinematicsConstraint<NumModules>::SwerveDriveKinematicsConstraint(
-    frc::SwerveDriveKinematics<NumModules> kinematics, units::meters_per_second_t maxSpeed)
+    frc::SwerveDriveKinematics<NumModules> kinematics,
+    units::meters_per_second_t maxSpeed)
     : m_kinematics(kinematics), m_maxSpeed(maxSpeed) {}
 
 template <int NumModules>
-units::meters_per_second_t SwerveDriveKinematicsConstraint<NumModules>::MaxVelocity(
+units::meters_per_second_t
+SwerveDriveKinematicsConstraint<NumModules>::MaxVelocity(
     const Pose2d& pose, curvature_t curvature,
     units::meters_per_second_t velocity) {
-    
-  auto xVelocity = velocity * sin (pose.Rotation().Radians().to<double>());
-  auto yVelocity = velocity * cos (pose.Rotation().Radians().to<double>());
-  auto wheelSpeeds = 
-      m_kinematics.ToSwerveModuleStates({xVelocity, yVelocity, velocity * curvature});
+  auto xVelocity = velocity * sin(pose.Rotation().Radians().to<double>());
+  auto yVelocity = velocity * cos(pose.Rotation().Radians().to<double>());
+  auto wheelSpeeds = m_kinematics.ToSwerveModuleStates(
+      {xVelocity, yVelocity, velocity * curvature});
   m_kinematics.NormalizeWheelSpeeds(wheelSpeeds);
 
   return m_kinematics.ToChassisSpeeds(wheelSpeeds).vx;

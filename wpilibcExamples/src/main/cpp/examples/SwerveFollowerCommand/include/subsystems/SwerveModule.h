@@ -12,25 +12,23 @@
 #include <frc/controller/PIDController.h>
 #include <frc/controller/ProfiledPIDController.h>
 #include <frc/geometry/Rotation2d.h>
-#include <frc/trajectory/TrapezoidProfile.h>
 #include <frc/kinematics/SwerveModuleState.h>
+#include <frc/trajectory/TrapezoidProfile.h>
 #include <wpi/math>
 
 #include "Constants.h"
 
 class SwerveModule {
  public:
-  SwerveModule(int driveMotorChannel,
-    int turningMotorChannel,
-    std::array<int, 2> driveEncoderPorts,
-    std::array<int, 2> turningEncoderPorts,
-    bool driveEncoderReversed,
-    bool turningEncoderReversed);
+  SwerveModule(int driveMotorChannel, int turningMotorChannel,
+               std::array<int, 2> driveEncoderPorts,
+               std::array<int, 2> turningEncoderPorts,
+               bool driveEncoderReversed, bool turningEncoderReversed);
 
   frc::SwerveModuleState GetState();
 
   void SetDesiredState(frc::SwerveModuleState& state);
-  
+
   void ResetEncoders();
 
  private:
@@ -53,7 +51,8 @@ class SwerveModule {
   bool m_reverseDriveEncoder;
   bool m_reverseTurningEncoder;
 
-  frc2::PIDController m_drivePIDController{ModuleConstants::kPModuleDriveController, 0, 0};
+  frc2::PIDController m_drivePIDController{
+      ModuleConstants::kPModuleDriveController, 0, 0};
   frc::ProfiledPIDController m_turningPIDController{
       ModuleConstants::kPModuleTurningController,
       0.0,

@@ -9,10 +9,10 @@
 
 #include <frc/controller/PIDController.h>
 #include <frc/controller/RamseteController.h>
+#include <frc/geometry/Translation2d.h>
 #include <frc/shuffleboard/Shuffleboard.h>
 #include <frc/trajectory/Trajectory.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
-#include <frc/geometry/Translation2d.h>
 #include <frc/trajectory/constraint/DifferentialDriveKinematicsConstraint.h>
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/MecanumFollowerCommand.h>
@@ -30,13 +30,18 @@ RobotContainer::RobotContainer() {
   // Set up default drive command
   m_drive.SetDefaultCommand(frc2::RunCommand(
       [this] {
-        m_drive.Drive(
-            m_driverController.GetY(frc::GenericHID::kLeftHand),
-            m_driverController.GetX(frc::GenericHID::kRightHand),
-            m_driverController.GetX(frc::GenericHID::kLeftHand),
-            false);
+        m_drive.Drive(m_driverController.GetY(frc::GenericHID::kLeftHand),
+                      m_driverController.GetX(frc::GenericHID::kRightHand),
+                      m_driverController.GetX(frc::GenericHID::kLeftHand),
+                      false);
       },
       {&m_drive}));
+
+  const frc::MecanumDriveKinematics DriveConstants::kDriveKinematics{
+    frc::Translation2d(kTrackLength / 2, kTrackWidth / 2),
+    frc::Translation2d(kTrackLength / 2, -kTrackWidth / 2),
+    frc::Translation2d(-kTrackLength / 2, kTrackWidth / 2),
+    frc::Translation2d(-kTrackLength / 2, -kTrackWidth / 2)};
 }
 
 void RobotContainer::ConfigureButtonBindings() {
@@ -71,25 +76,26 @@ frc2::Command* RobotContainer::GetAutonomousCommand() {
       false);
 
   frc2::MecanumFollowerCommand mecanumFollowerCommand(
-      exampleTrajectory,
-      [this]() { return m_drive.GetPose(); },
+      exampleTrajectory, [this]() { return m_drive.GetPose(); },
 
-      DriveConstants::ks,
-      DriveConstants::kv,
-      DriveConstants::ka,
+      DriveConstants::ks, DriveConstants::kv, DriveConstants::ka,
       DriveConstants::kDriveKinematics,
 
       frc2::PIDController(AutoConstants::kPXController, 0, 0),
       frc2::PIDController(AutoConstants::kPYController, 0, 0),
-      frc::ProfiledPIDController(AutoConstants::kPThetaController, 0, 0, AutoConstants::kThetaControllerConstraints),
+      frc::ProfiledPIDController(AutoConstants::kPThetaController, 0, 0,
+                                 AutoConstants::kThetaControllerConstraints),
 
       AutoConstants::kMaxSpeed,
 
       [this]() {
-        return frc::MecanumDriveWheelSpeeds{units::meters_per_second_t(m_drive.GetFrontLeftEncoder().GetRate()),
-          units::meters_per_second_t(m_drive.GetFrontRightEncoder().GetRate()),
-          units::meters_per_second_t(m_drive.GetRearLeftEncoder().GetRate()),
-          units::meters_per_second_t(m_drive.GetRearRightEncoder().GetRate())};
+        return frc::MecanumDriveWheelSpeeds{
+            units::meters_per_second_t(m_drive.GetFrontLeftEncoder().GetRate()),
+            units::meters_per_second_t(
+                m_drive.GetFrontRightEncoder().GetRate()),
+            units::meters_per_second_t(m_drive.GetRearLeftEncoder().GetRate()),
+            units::meters_per_second_t(
+                m_drive.GetRearRightEncoder().GetRate())};
       },
 
       frc2::PIDController(DriveConstants::kPFrontLeftVel, 0, 0),
@@ -97,10 +103,11 @@ frc2::Command* RobotContainer::GetAutonomousCommand() {
       frc2::PIDController(DriveConstants::kPFrontRightVel, 0, 0),
       frc2::PIDController(DriveConstants::kPRearRightVel, 0, 0),
 
-    
-      [this](auto frontLeft, auto rearLeft, auto frontRight, auto rearRight) {
-        m_drive.SetSpeedControllers(double(frontLeft) / 12. , double(rearLeft) / 12. , double(frontRight) / 12. , double(rearRight) / 12.);
-        },
+      [this](units::voltage::volt_t frontLeft, units::voltage::volt_t rearLeft, units::voltage::volt_t frontRight, units::voltage::volt_t rearRight) {
+        m_drive.SetSpeedControllers(
+            frontLeft.to<double>() / 12., rearLeft.to<double>() / 12.,
+            frontRight.to<double>() / 12., rearRight.to<double>() / 12.);
+      },
 
       {&m_drive});
 

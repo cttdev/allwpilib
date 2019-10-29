@@ -4,6 +4,7 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
+
 #include <units/units.h>
 
 #include <frc/geometry/Translation2d.h>
@@ -52,13 +53,15 @@ const bool kRearLeftDriveEncoderReversed = true;
 const bool kFrontRightDriveEncoderReversed = false;
 const bool kRearRightDriveEncoderReversed = true;
 
-const auto kTrackWidth = .5_m; //Distance between centers of right and left wheels on robot
-const auto kTrackLength = .7_m; //Distance between centers of front and back wheels on robot
+const auto kTrackWidth =
+    .5_m;  // Distance between centers of right and left wheels on robot
+const auto kTrackLength =
+    .7_m;  // Distance between centers of front and back wheels on robot
 frc::SwerveDriveKinematics<4> kDriveKinematics{
-    frc::Translation2d(kTrackLength/2, kTrackWidth/2),
-    frc::Translation2d(kTrackLength/2, -kTrackWidth/2),
-    frc::Translation2d(-kTrackLength/2, kTrackWidth/2),
-    frc::Translation2d(-kTrackLength/2, -kTrackWidth/2)};
+    frc::Translation2d(kTrackLength / 2, kTrackWidth / 2),
+    frc::Translation2d(kTrackLength / 2, -kTrackWidth / 2),
+    frc::Translation2d(-kTrackLength / 2, kTrackWidth / 2),
+    frc::Translation2d(-kTrackLength / 2, -kTrackWidth / 2)};
 
 const bool kGyroReversed = false;
 
@@ -87,17 +90,18 @@ const double kEncoderDistancePerPulse =
 
 const double kPModuleTurningController = 1;
 const double kPModuleDriveController = 1;
-}
-
+}  // namespace ModuleConstants
 
 namespace AutoConstants {
 using radians_per_second_squared_t =
-      units::compound_unit<units::radians, units::inverse<units::squared<units::second>>>;
+    units::compound_unit<units::radians,
+                         units::inverse<units::squared<units::second>>>;
 
 const auto kMaxSpeed = units::meters_per_second_t(3);
 const auto kMaxAcceleration = units::meters_per_second_squared_t(3);
 const auto kMaxAngularSpeed = units::radians_per_second_t(3.142);
-const auto kMaxAngularAcceleration = units::unit_t<radians_per_second_squared_t>(3.142);
+const auto kMaxAngularAcceleration =
+    units::unit_t<radians_per_second_squared_t>(3.142);
 
 const double kPXController = .5;
 const double kPYController = .5;
@@ -105,7 +109,9 @@ const double kPThetaController = .5;
 
 //
 
-const frc::TrapezoidProfile::Constraints kThetaControllerConstraints{units::meters_per_second_t(kMaxAngularSpeed.to<double>()), units::meters_per_second_squared_t(kMaxAngularAcceleration.to<double>())};
+const frc::TrapezoidProfile::Constraints kThetaControllerConstraints{
+    units::meters_per_second_t(kMaxAngularSpeed.to<double>()),
+    units::meters_per_second_squared_t(kMaxAngularAcceleration.to<double>())};
 
 }  // namespace AutoConstants
 

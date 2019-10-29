@@ -15,8 +15,8 @@
 #include <frc/geometry/Rotation2d.h>
 #include <frc/interfaces/Gyro.h>
 #include <frc/kinematics/ChassisSpeeds.h>
-#include <frc/kinematics/SwerveDriveOdometry.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
+#include <frc/kinematics/SwerveDriveOdometry.h>
 #include <frc2/command/SubsystemBase.h>
 
 #include "Constants.h"
@@ -34,29 +34,29 @@ class DriveSubsystem : public frc2::SubsystemBase {
   // Subsystem methods go here.
 
   /**
-   * Drives the robot at given x, y and theta speeds. Speeds range from [-1, 1] and the linear
-   * speeds have no effect on the angular speed.
+   * Drives the robot at given x, y and theta speeds. Speeds range from [-1, 1]
+   * and the linear speeds have no effect on the angular speed.
    *
-   * @param xSpeed        Speed of the robot in the x direction (forward/backwards).
+   * @param xSpeed        Speed of the robot in the x direction
+   * (forward/backwards).
    * @param ySpeed        Speed of the robot in the y direction (sideways).
    * @param rot           Angular rate of the robot.
-   * @param fieldRelative Whether the provided x and y speeds are relative to the field. 
+   * @param fieldRelative Whether the provided x and y speeds are relative to
+   * the field.
    */
   void Drive(units::meters_per_second_t xSpeed,
-    units::meters_per_second_t ySpeed,
-    units::radians_per_second_t rot,
-    bool feildRelative);
+             units::meters_per_second_t ySpeed, units::radians_per_second_t rot,
+             bool feildRelative);
 
   /**
    * Resets the drive encoders to currently read a position of 0.
    */
   void ResetEncoders();
 
-
   /**
-  * Sets the drive SpeedControllers to a power from -1 to 1.
-  */
-  void SetModuleStates(std::array<frc::SwerveModuleState,4> desiredStates);
+   * Sets the drive SpeedControllers to a power from -1 to 1.
+   */
+  void SetModuleStates(std::array<frc::SwerveModuleState, 4> desiredStates);
 
   /**
    * Returns the heading of the robot.
@@ -99,7 +99,6 @@ class DriveSubsystem : public frc2::SubsystemBase {
   SwerveModule m_rearLeft;
   SwerveModule m_frontRight;
   SwerveModule m_rearRight;
-
 
   // The gyro sensor
   frc::ADXRS450_Gyro m_gyro;

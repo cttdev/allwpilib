@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
-  
+
   private final SwerveModule m_frontLeft = new SwerveModule(kFrontLeftDriveMotorPort,
     kFrontLeftTurningMotorPort,
     kFrontLeftDriveEncoderPorts,
@@ -74,7 +74,7 @@ public class DriveSubsystem extends SubsystemBase {
       m_rearLeft.getState(),
       m_frontRight.getState(),
       m_rearRight.getState()
-      
+
       );
   }
 

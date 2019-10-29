@@ -7,17 +7,17 @@
 
 #include "RobotContainer.h"
 
+#include <units/units.h>
+
 #include <frc/controller/PIDController.h>
+#include <frc/geometry/Translation2d.h>
 #include <frc/shuffleboard/Shuffleboard.h>
 #include <frc/trajectory/Trajectory.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
-#include <frc/geometry/Translation2d.h>
 #include <frc2/command/InstantCommand.h>
-#include <frc2/command/SwerveFollowerCommand.h>
 #include <frc2/command/SequentialCommandGroup.h>
+#include <frc2/command/SwerveFollowerCommand.h>
 #include <frc2/command/button/JoystickButton.h>
-
-#include <units/units.h>
 
 #include "Constants.h"
 
@@ -30,17 +30,17 @@ RobotContainer::RobotContainer() {
   // Set up default drive command
   m_drive.SetDefaultCommand(frc2::RunCommand(
       [this] {
-        m_drive.Drive(
-            units::meters_per_second_t(m_driverController.GetY(frc::GenericHID::kLeftHand)),
-            units::meters_per_second_t((frc::GenericHID::kRightHand)),
-            units::radians_per_second_t(m_driverController.GetX(frc::GenericHID::kLeftHand)),
-            false);
+        m_drive.Drive(units::meters_per_second_t(
+                          m_driverController.GetY(frc::GenericHID::kLeftHand)),
+                      units::meters_per_second_t((frc::GenericHID::kRightHand)),
+                      units::radians_per_second_t(
+                          m_driverController.GetX(frc::GenericHID::kLeftHand)),
+                      false);
       },
       {&m_drive}));
 }
 
-void RobotContainer::ConfigureButtonBindings() {
-}
+void RobotContainer::ConfigureButtonBindings() {}
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {
   // An example trajectory to follow.  All units in meters.
@@ -65,24 +65,27 @@ frc2::Command* RobotContainer::GetAutonomousCommand() {
       false);
 
   frc2::SwerveFollowerCommand<4> swerveFollowerCommand(
-      exampleTrajectory,
-      [this]() { return m_drive.GetPose(); },
+      exampleTrajectory, [this]() { return m_drive.GetPose(); },
 
       DriveConstants::kDriveKinematics,
 
       frc2::PIDController(AutoConstants::kPXController, 0, 0),
       frc2::PIDController(AutoConstants::kPYController, 0, 0),
-      frc::ProfiledPIDController(AutoConstants::kPThetaController, 0, 0, AutoConstants::kThetaControllerConstraints),
+      frc::ProfiledPIDController(AutoConstants::kPThetaController, 0, 0,
+                                 AutoConstants::kThetaControllerConstraints),
 
-      [this](auto moduleStates) {
-        m_drive.SetModuleStates(moduleStates);
-        },
+      [this](auto moduleStates) { m_drive.SetModuleStates(moduleStates); },
 
       {&m_drive});
 
   // no auto
   return new frc2::SequentialCommandGroup(
-      std::move(swerveFollowerCommand),
-      std::move(swerveFollowerCommand),
-      frc2::InstantCommand([this]() { m_drive.Drive(units::meters_per_second_t(0), units::meters_per_second_t(0), units::radians_per_second_t(0), false); }, {}));
+      std::move(swerveFollowerCommand), std::move(swerveFollowerCommand),
+      frc2::InstantCommand(
+          [this]() {
+            m_drive.Drive(units::meters_per_second_t(0),
+                          units::meters_per_second_t(0),
+                          units::radians_per_second_t(0), false);
+          },
+          {}));
 }

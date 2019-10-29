@@ -13,9 +13,9 @@
 
 #include "frc/spline/SplineParameterizer.h"
 #include "frc/trajectory/Trajectory.h"
+#include "frc/trajectory/constraint/DifferentialDriveKinematicsConstraint.h"
 #include "frc/trajectory/constraint/MecanumDriveKinematicsConstraint.h"
 #include "frc/trajectory/constraint/SwerveDriveKinematicsConstraint.h"
-#include "frc/trajectory/constraint/DifferentialDriveKinematicsConstraint.h"
 #include "frc/trajectory/constraint/TrajectoryConstraint.h"
 
 namespace frc {
@@ -181,14 +181,13 @@ class TrajectoryGenerator {
    */
   static Trajectory GenerateTrajectory(
       const Pose2d& start, const std::vector<Translation2d>& waypoints,
-      const Pose2d& end,
-      const MecanumDriveKinematics& mecanumDriveKinematics,
+      const Pose2d& end, const MecanumDriveKinematics& mecanumDriveKinematics,
       units::meters_per_second_t startVelocity,
       units::meters_per_second_t endVelocity,
       units::meters_per_second_t maxVelocity,
       units::meters_per_second_squared_t maxAcceleration, bool reversed);
 
-    /**
+  /**
    * Generates a trajectory with the given waypoints and swerve drive
    * constraints. Use this method if you just want a constraint such that none
    * of the wheels on your swerve drive exceed the specified max velocity.

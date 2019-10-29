@@ -33,8 +33,8 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory;
  * PID functionality of a "smart" motor controller) may use the secondary constructor that omits
  * the PID and feedforward functionality, returning only the raw wheel speeds from the RAMSETE
  * controller.
- * 
- * <p>The robot angle controller does not follow the angle given by 
+ *
+ * <p>The robot angle controller does not follow the angle given by
  * the trajectory but rather goes to the angle given in the final state of the trajectory.
  */
 
@@ -135,7 +135,7 @@ public class MecanumFollowerCommand extends CommandBase {
     m_thetaController = requireNonNullParam(thetaController, "thetaController", "MecanumFollowerCommand");
 
     m_maxWheelVelocityMetersPerSecond = requireNonNullParam(maxWheelVelocityMetersPerSecond, "maxWheelVelocityMetersPerSecond", "MecanumFollowerCommand");
-    
+
     m_frontLeftController = requireNonNullParam(frontLeftController, "frontLeftController", "MecanumFollowerCommand");
     m_rearLeftController = requireNonNullParam(rearLeftController, "rearLeftController", "MecanumFollowerCommand");
     m_frontRightController = requireNonNullParam(frontRightController, "frontRightController", "MecanumFollowerCommand");
@@ -256,7 +256,7 @@ public class MecanumFollowerCommand extends CommandBase {
     double targetYVel = m_yController.calculate(
       m_pose.get().getTranslation().getY(),
        m_desiredPose.getTranslation().getY());
-       
+
     double targetAngularVel = m_thetaController.calculate(
       m_pose.get().getRotation().getRadians(),
        m_finalPose.getRotation().getRadians());

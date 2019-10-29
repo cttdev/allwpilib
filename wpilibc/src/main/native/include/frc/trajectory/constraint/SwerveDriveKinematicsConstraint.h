@@ -7,8 +7,9 @@
 
 #pragma once
 
-#include <units/units.h>
 #include <cmath>
+
+#include <units/units.h>
 
 #include "frc/kinematics/SwerveDriveKinematics.h"
 #include "frc/trajectory/constraint/TrajectoryConstraint.h"
@@ -24,8 +25,9 @@ namespace frc {
 template <int NumModules>
 class SwerveDriveKinematicsConstraint : public TrajectoryConstraint {
  public:
-  SwerveDriveKinematicsConstraint(frc::SwerveDriveKinematics<NumModules> kinematics,
-                                        units::meters_per_second_t maxSpeed);
+  SwerveDriveKinematicsConstraint(
+      frc::SwerveDriveKinematics<NumModules> kinematics,
+      units::meters_per_second_t maxSpeed);
 
   units::meters_per_second_t MaxVelocity(
       const Pose2d& pose, curvature_t curvature,
