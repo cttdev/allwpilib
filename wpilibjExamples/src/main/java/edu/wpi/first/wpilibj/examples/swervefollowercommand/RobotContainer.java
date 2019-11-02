@@ -107,7 +107,6 @@ public class RobotContainer {
     );
 
     SwerveFollowerCommand swerveFollowerCommand = new SwerveFollowerCommand(
-        4, // Number of Modules
         exampleTrajectory,
         m_robotDrive::getPose, //Functional interface to feed supplier
         kDriveKinematics,

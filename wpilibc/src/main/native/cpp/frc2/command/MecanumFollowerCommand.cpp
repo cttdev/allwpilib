@@ -7,6 +7,23 @@
 
 #include "frc2/command/MecanumFollowerCommand.h"
 
+/**
+ * A command that uses two PID controllers ({@link PIDController}) and a ProfiledPIDController ({@link ProfiledPIDController}) to follow a trajectory
+ * {@link Trajectory} with a mecanum drive.
+ *
+ * <p>The command handles trajectory-following, Velocity PID calculations, and feedforwards internally. This
+ * is intended to be a more-or-less "complete solution" that can be used by teams without a great
+ * deal of controls expertise.
+ *
+ * <p>Advanced teams seeking more flexibility (for example, those who wish to use the onboard
+ * PID functionality of a "smart" motor controller) may use the secondary constructor that omits
+ * the PID and feedforward functionality, returning only the raw wheel speeds from the RAMSETE
+ * controller.
+ *
+ * <p>The robot angle controller does not follow the angle given by
+ * the trajectory but rather goes to the angle given in the final state of the trajectory.
+ */
+
 using namespace frc2;
 using namespace units;
 
@@ -14,6 +31,41 @@ template <typename T>
 int sgn(T val) {
   return (T(0) < val) - (val < T(0));
 }
+
+ /**
+   * Constructs a new MecanumFollowerCommand that, when executed, will follow the provided trajectory.
+   * PID control and feedforward are handled internally, outputs are scaled from -12 to 12 as a voltage output to the motor.
+   *
+   * <p>Note: The controllers will *not* set the outputVolts to zero upon completion of the path -
+   * this
+   * is left to the user, since it is not appropriate for paths with nonstationary endstates.
+   * 
+   * <p>Note2: The rotation controller will calculate the rotation based on the final pose in the trajectory, not the poses at each time step.
+   *
+   * @param trajectory                        The trajectory to follow.
+   * @param pose                              A function that supplies the robot pose - use one of
+   *                                          the odometry classes to provide this.
+   * @param ksVolts                           Constant feedforward term for the robot drive.
+   * @param kvVoltSecondsPerMeter             Velocity-proportional feedforward term for the robot
+   *                                          drive.
+   * @param kaVoltSecondsSquaredPerMeter      Acceleration-proportional feedforward term for the robot
+   *                                          drive.
+   * @param kinematics                        The kinematics for the robot drivetrain.
+   * @param xController                       The Trajectory Tracker PID controller for the robot's x position.
+   * @param yController                       The Trajectory Tracker PID controller for the robot's y position.
+   * @param thetaController                   The Trajectory Tracker PID controller for angle for the robot.
+   * @param maxWheelVelocityMetersPerSecond   The maximum velocity of a drivetrain wheel.
+   * @param frontLeftController               The front left wheel velocity PID.
+   * @param rearLeftController                The rear left wheel velocity PID.
+   * @param frontRightController              The front right wheel velocity PID.
+   * @param rearRightController               The rear right wheel velocity PID.
+   * @param currentWheelSpeeds                A MecanumDriveWheelSpeeds object containing the current wheel speeds.
+   * @param frontLeftOutputVolts              The front left wheel output in volts.
+   * @param rearLeftOutputVolts               The rear left wheel output in volts.`
+   * @param frontRightOutputVolts             The front right wheel output in volts.
+   * @param rearRightOutputVolts              The rear right wheel output in volts.
+   * @param requirements                      The subsystems to require.
+   */
 
 MecanumFollowerCommand::MecanumFollowerCommand(
     frc::Trajectory trajectory, std::function<frc::Pose2d()> pose,
@@ -54,6 +106,41 @@ MecanumFollowerCommand::MecanumFollowerCommand(
       m_outputVolts(output) {
   AddRequirements(requirements);
 }
+
+/**
+   * Constructs a new MecanumFollowerCommand that, when executed, will follow the provided trajectory.
+   * PID control and feedforward are handled internally, outputs are scaled from -12 to 12 as a voltage output to the motor.
+   *
+   * <p>Note: The controllers will *not* set the outputVolts to zero upon completion of the path -
+   * this
+   * is left to the user, since it is not appropriate for paths with nonstationary endstates.
+   * 
+   * <p>Note2: The rotation controller will calculate the rotation based on the final pose in the trajectory, not the poses at each time step.
+   *
+   * @param trajectory                        The trajectory to follow.
+   * @param pose                              A function that supplies the robot pose - use one of
+   *                                          the odometry classes to provide this.
+   * @param ksVolts                           Constant feedforward term for the robot drive.
+   * @param kvVoltSecondsPerMeter             Velocity-proportional feedforward term for the robot
+   *                                          drive.
+   * @param kaVoltSecondsSquaredPerMeter      Acceleration-proportional feedforward term for the robot
+   *                                          drive.
+   * @param kinematics                        The kinematics for the robot drivetrain.
+   * @param xController                       The Trajectory Tracker PID controller for the robot's x position.
+   * @param yController                       The Trajectory Tracker PID controller for the robot's y position.
+   * @param thetaController                   The Trajectory Tracker PID controller for angle for the robot.
+   * @param maxWheelVelocityMetersPerSecond   The maximum velocity of a drivetrain wheel.
+   * @param frontLeftController               The front left wheel velocity PID.
+   * @param rearLeftController                The rear left wheel velocity PID.
+   * @param frontRightController              The front right wheel velocity PID.
+   * @param rearRightController               The rear right wheel velocity PID.
+   * @param currentWheelSpeeds                A MecanumDriveWheelSpeeds object containing the current wheel speeds.
+   * @param frontLeftOutputMetersPerSecond    The front left wheel output in volts.
+   * @param rearLeftOutputMetersPerSecond     The rear left wheel output in volts.`
+   * @param frontRightOutputMetersPerSecond   The front right wheel output in volts.
+   * @param rearRightOutputMetersPerSecond    The rear right wheel output in volts.
+   * @param requirements                      The subsystems to require.
+   */
 
 MecanumFollowerCommand::MecanumFollowerCommand(
     frc::Trajectory trajectory, std::function<frc::Pose2d()> pose,
@@ -113,9 +200,11 @@ void MecanumFollowerCommand::Execute() {
   auto targetYVel = velocity::meters_per_second_t(
       m_yController->Calculate((m_pose().Translation().Y().to<double>()),
                                (m_desiredPose.Translation().Y().to<double>())));
-  // auto targetAngularVel =
-  // angular_velocity::radians_per_second_t(m_thetaController->Calculate((m_pose().Rotation().Radians().to<double>()),
-  // (m_finalPose.Rotation().Radians().to<double>())));
+  auto targetAngularVel =
+    angular_velocity::radians_per_second_t(m_thetaController->Calculate(m_pose().Rotation().Radians().to<double>(),
+    units::meter_t(m_finalPose.Rotation().Radians().to<double>()))); //Profiled PID Controller only takes meters as setpoint and measurement
+  // The robot will go to the desired rotation of the final pose in the trajectory,
+  // not following the poses at individual states.
 
   auto vRef = m_desiredState.velocity;
 
@@ -123,8 +212,7 @@ void MecanumFollowerCommand::Execute() {
   targetYVel += vRef * std::cos(m_poseError.Rotation().Radians().to<double>());
 
   auto targetChassisSpeeds = frc::ChassisSpeeds{
-      targetXVel, targetYVel,
-      angular_velocity::radians_per_second_t(0) /*targetAngularVel*/};
+      targetXVel, targetYVel, targetAngularVel};
 
   auto targetWheelSpeeds = m_kinematics.ToWheelSpeeds(targetChassisSpeeds);
 

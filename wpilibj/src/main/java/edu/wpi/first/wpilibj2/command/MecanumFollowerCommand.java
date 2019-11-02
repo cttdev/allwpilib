@@ -64,7 +64,7 @@ public class MecanumFollowerCommand extends CommandBase {
   private final DoubleConsumer m_frontRightOutput;
   private final DoubleConsumer m_rearRightOutput;
 
-/**
+  /**
    * Constructs a new MecanumFollowerCommand that, when executed, will follow the provided trajectory.
    * PID control and feedforward are handled internally, outputs are scaled from -12 to 12 as a voltage output to the motor.
    *
@@ -72,7 +72,7 @@ public class MecanumFollowerCommand extends CommandBase {
    * this
    * is left to the user, since it is not appropriate for paths with nonstationary endstates.
    * 
-   * <p>Note2: The rotation controller will calculate the rotation bsed on the final pose in the trajectory, not the poses at each time step.
+   * <p>Note2: The rotation controller will calculate the rotation based on the final pose in the trajectory, not the poses at each time step.
    *
    * @param trajectory                        The trajectory to follow.
    * @param pose                              A function that supplies the robot pose - use one of
@@ -86,12 +86,12 @@ public class MecanumFollowerCommand extends CommandBase {
    * @param xController                       The Trajectory Tracker PID controller for the robot's x position.
    * @param yController                       The Trajectory Tracker PID controller for the robot's y position.
    * @param thetaController                   The Trajectory Tracker PID controller for angle for the robot.
-   * @param maxWheelVelocityMetersPerSecond   The maxium velocity of a drivetrain wheel.
-   * @param frontLeftController               The front left wheel velocty PID.
-   * @param rearLeftController                The rear left wheel velocty PID.
-   * @param frontRightController              The front right wheel velocty PID.
-   * @param rearRightController               The rear right wheel velocty PID.
-   * @param currentWheelSpeeds                A MecanumDriveWheelSpeeds object containg the current wheel speeds.
+   * @param maxWheelVelocityMetersPerSecond   The maximum velocity of a drivetrain wheel.
+   * @param frontLeftController               The front left wheel velocity PID.
+   * @param rearLeftController                The rear left wheel velocity PID.
+   * @param frontRightController              The front right wheel velocity PID.
+   * @param rearRightController               The rear right wheel velocity PID.
+   * @param currentWheelSpeeds                A MecanumDriveWheelSpeeds object containing the current wheel speeds.
    * @param frontLeftOutputVolts              The front left wheel output in volts.
    * @param rearLeftOutputVolts               The rear left wheel output in volts.`
    * @param frontRightOutputVolts             The front right wheel output in volts.
@@ -160,7 +160,7 @@ public class MecanumFollowerCommand extends CommandBase {
    * this
    * is left to the user, since it is not appropriate for paths with nonstationary endstates.
    * 
-   * <p>Note2: The rotation controller will calculate the rotation bsed on the final pose in the trajectory, not the poses at each time step.
+   * <p>Note2: The rotation controller will calculate the rotation based on the final pose in the trajectory, not the poses at each time step.
    *
    * @param trajectory                        The trajectory to follow.
    * @param pose                              A function that supplies the robot pose - use one of
@@ -174,12 +174,12 @@ public class MecanumFollowerCommand extends CommandBase {
    * @param xController                       The Trajectory Tracker PID controller for the robot's x position.
    * @param yController                       The Trajectory Tracker PID controller for the robot's y position.
    * @param thetaController                   The Trajectory Tracker PID controller for angle for the robot.
-   * @param maxWheelVelocityMetersPerSecond   The maxium velocity of a drivetrain wheel.
-   * @param frontLeftController               The front left wheel velocty PID.
-   * @param rearLeftController                The rear left wheel velocty PID.
-   * @param frontRightController              The front right wheel velocty PID.
-   * @param rearRightController               The rear right wheel velocty PID.
-   * @param currentWheelSpeeds                A MecanumDriveWheelSpeeds object containg the current wheel speeds.
+   * @param maxWheelVelocityMetersPerSecond   The maximum velocity of a drivetrain wheel.
+   * @param frontLeftController               The front left wheel velocity PID.
+   * @param rearLeftController                The rear left wheel velocity PID.
+   * @param frontRightController              The front right wheel velocity PID.
+   * @param rearRightController               The rear right wheel velocity PID.
+   * @param currentWheelSpeeds                A MecanumDriveWheelSpeeds object containing the current wheel speeds.
    * @param frontLeftOutputMetersPerSecond    The front left wheel output in volts.
    * @param rearLeftOutputMetersPerSecond     The rear left wheel output in volts.`
    * @param frontRightOutputMetersPerSecond   The front right wheel output in volts.
@@ -231,7 +231,7 @@ public class MecanumFollowerCommand extends CommandBase {
   @Override
   public void initialize() {
     var initialState = m_trajectory.sample(0);
-    m_finalPose = m_trajectory.sample(m_trajectory.getTotalTimeSeconds()).poseMeters; // Sample final pose to get robot rotation
+    m_finalPose = m_trajectory.sample(m_trajectory.getTotalTimeSeconds()).poseMeters; //Sample final pose to get robot rotation
 
     var initialXVelocity = initialState.velocityMetersPerSecond * Math.sin(initialState.poseMeters.getRotation().getRadians());
     var initialYVelocity = initialState.velocityMetersPerSecond * Math.cos(initialState.poseMeters.getRotation().getRadians());
@@ -263,7 +263,7 @@ public class MecanumFollowerCommand extends CommandBase {
     double targetAngularVel = m_thetaController.calculate(
       m_pose.get().getRotation().getRadians(),
        m_finalPose.getRotation().getRadians()); 
-       // The robot will go to the desired rotation of the final pose in the trajecotry,
+       // The robot will go to the desired rotation of the final pose in the trajectory,
        // not following the poses at individual states.
 
     double vRef = m_desiredState.velocityMetersPerSecond;

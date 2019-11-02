@@ -21,6 +21,14 @@
 
 #include "Constants.h"
 
+using namespace DriveConstants;
+
+const frc::MecanumDriveKinematics DriveConstants::kDriveKinematics{
+    frc::Translation2d(kTrackLength / 2, kTrackWidth / 2),
+    frc::Translation2d(kTrackLength / 2, -kTrackWidth / 2),
+    frc::Translation2d(-kTrackLength / 2, kTrackWidth / 2),
+    frc::Translation2d(-kTrackLength / 2, -kTrackWidth / 2)};
+
 RobotContainer::RobotContainer() {
   // Initialize all of your commands and subsystems here
 
@@ -36,12 +44,6 @@ RobotContainer::RobotContainer() {
                       false);
       },
       {&m_drive}));
-
-  const frc::MecanumDriveKinematics DriveConstants::kDriveKinematics{
-    frc::Translation2d(kTrackLength / 2, kTrackWidth / 2),
-    frc::Translation2d(kTrackLength / 2, -kTrackWidth / 2),
-    frc::Translation2d(-kTrackLength / 2, kTrackWidth / 2),
-    frc::Translation2d(-kTrackLength / 2, -kTrackWidth / 2)};
 }
 
 void RobotContainer::ConfigureButtonBindings() {

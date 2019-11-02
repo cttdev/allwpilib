@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory;
  *
  * <p>Advanced teams seeking more flexibility (for example, those who wish to use the onboard
  * PID functionality of a "smart" motor controller) may use the secondary constructor that omits
- * the PID and feedforward functionality, returning only the raw module states from the positon PID controllers.
+ * the PID and feedforward functionality, returning only the raw module states from the position PID controllers.
  *
  * <p>The robot angle controller does not follow the angle given by
  * the trajectory but rather goes to the angle given in the final state of the trajectory.
@@ -57,7 +57,7 @@ public class SwerveFollowerCommand extends CommandBase {
    * this
    * is left to the user, since it is not appropriate for paths with nonstationary endstates.
    *
-   * <p>Note2: The rotation controller will calculate the rotation bsed on the final pose in the trajectory, not the poses at each time step.
+   * <p>Note2: The rotation controller will calculate the rotation based on the final pose in the trajectory, not the poses at each time step.
    *
    * @param trajectory                        The trajectory to follow.
    * @param pose                              A function that supplies the robot pose - use one of
@@ -66,7 +66,7 @@ public class SwerveFollowerCommand extends CommandBase {
    * @param xController                       The Trajectory Tracker PID controller for the robot's x position.
    * @param yController                       The Trajectory Tracker PID controller for the robot's y position.
    * @param thetaController                   The Trajectory Tracker PID controller for angle for the robot.
-   * @param outputModuleStates                The raw output module states from the psoiton contollers.
+   * @param outputModuleStates                The raw output module states from the position controllers.
    * @param requirements                      The subsystems to require.
    */
 
@@ -120,6 +120,8 @@ public class SwerveFollowerCommand extends CommandBase {
     double targetAngularVel = m_thetaController.calculate(
       m_pose.get().getRotation().getRadians(),
        m_finalPose.getRotation().getRadians());
+       // The robot will go to the desired rotation of the final pose in the trajectory,
+       // not following the poses at individual states.
 
     double vRef = m_desiredState.velocityMetersPerSecond;
 

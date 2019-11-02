@@ -23,49 +23,49 @@
  */
 
 namespace DriveConstants {
-const int kFrontLeftMotorPort = 0;
-const int kRearLeftMotorPort = 1;
-const int kFrontRightMotorPort = 2;
-const int kRearRightMotorPort = 3;
+constexpr int kFrontLeftMotorPort = 0;
+constexpr int kRearLeftMotorPort = 1;
+constexpr int kFrontRightMotorPort = 2;
+constexpr int kRearRightMotorPort = 3;
 
-const int kFrontLeftEncoderPorts[] = {0, 1};
-const int kRearLeftEncoderPorts[] = {2, 3};
-const int kFrontRightEncoderPorts[] = {4, 5};
-const int kRearRightEncoderPorts[] = {5, 6};
+constexpr int kFrontLeftEncoderPorts[] = {0, 1};
+constexpr int kRearLeftEncoderPorts[] = {2, 3};
+constexpr int kFrontRightEncoderPorts[] = {4, 5};
+constexpr int kRearRightEncoderPorts[] = {5, 6};
 
-const bool kFrontLeftEncoderReversed = false;
-const bool kRearLeftEncoderReversed = true;
-const bool kFrontRightEncoderReversed = false;
-const bool kRearRightEncoderReversed = true;
+constexpr bool kFrontLeftEncoderReversed = false;
+constexpr bool kRearLeftEncoderReversed = true;
+constexpr bool kFrontRightEncoderReversed = false;
+constexpr bool kRearRightEncoderReversed = true;
 
-const auto kTrackWidth =
+constexpr auto kTrackWidth =
     .5_m;  // Distance between centers of right and left wheels on robot
-const auto kTrackLength =
+constexpr auto kTrackLength =
     .7_m;  // Distance between centers of front and back wheels on robot
 extern const frc::MecanumDriveKinematics kDriveKinematics;
 
-const int kEncoderCPR = 1024;
-const double kWheelDiameterMeters = .15;
-const double kEncoderDistancePerPulse =
+constexpr int kEncoderCPR = 1024;
+constexpr double kWheelDiameterMeters = .15;
+constexpr double kEncoderDistancePerPulse =
     // Assumes the encoders are directly mounted on the wheel shafts
     (kWheelDiameterMeters * 3.142) / static_cast<double>(kEncoderCPR);
 
-const bool kGyroReversed = false;
+constexpr bool kGyroReversed = false;
 
 // These are example values only - DO NOT USE THESE FOR YOUR OWN ROBOT!
 // These characterization values MUST be determined either experimentally or
 // theoretically for *your* robot's drive. The RobotPy Characterization
 // Toolsuite provides a convenient tool for obtaining these values for your
 // robot.
-const auto ks = 1_V;
-const auto kv = .8 * 1_V * 1_s / 1_m;
-const auto ka = .15 * 1_V * 1_s * 1_s / 1_m;
+constexpr auto ks = 1_V;
+constexpr auto kv = .8 * 1_V * 1_s / 1_m;
+constexpr auto ka = .15 * 1_V * 1_s * 1_s / 1_m;
 
 // Example value only - as above, this must be tuned for your drive!
-const double kPFrontLeftVel = .5;
-const double kPRearLeftVel = .5;
-const double kPFrontRightVel = .5;
-const double kPRearRightVel = .5;
+constexpr double kPFrontLeftVel = .5;
+constexpr double kPRearLeftVel = .5;
+constexpr double kPFrontRightVel = .5;
+constexpr double kPRearRightVel = .5;
 }  // namespace DriveConstants
 
 namespace AutoConstants {
@@ -73,24 +73,24 @@ using radians_per_second_squared_t =
     units::compound_unit<units::radians,
                          units::inverse<units::squared<units::second>>>;
 
-const auto kMaxSpeed = units::meters_per_second_t(3);
-const auto kMaxAcceleration = units::meters_per_second_squared_t(3);
-const auto kMaxAngularSpeed = units::radians_per_second_t(3);
-const auto kMaxAngularAcceleration =
+constexpr auto kMaxSpeed = units::meters_per_second_t(3);
+constexpr auto kMaxAcceleration = units::meters_per_second_squared_t(3);
+constexpr auto kMaxAngularSpeed = units::radians_per_second_t(3);
+constexpr auto kMaxAngularAcceleration =
     units::unit_t<radians_per_second_squared_t>(3);
 
-const double kPXController = .5;
-const double kPYController = .5;
-const double kPThetaController = .5;
+constexpr double kPXController = .5;
+constexpr double kPYController = .5;
+constexpr double kPThetaController = .5;
 
 //
 
-const frc::TrapezoidProfile::Constraints kThetaControllerConstraints{
+constexpr frc::TrapezoidProfile::Constraints kThetaControllerConstraints{
     units::meters_per_second_t(kMaxAngularSpeed.to<double>()),
     units::meters_per_second_squared_t(kMaxAngularAcceleration.to<double>())};
 
 }  // namespace AutoConstants
 
 namespace OIConstants {
-const int kDriverControllerPort = 1;
+constexpr int kDriverControllerPort = 1;
 }  // namespace OIConstants

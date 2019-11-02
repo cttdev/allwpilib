@@ -23,39 +23,39 @@
  */
 
 namespace DriveConstants {
-const int kFrontLeftDriveMotorPort = 0;
-const int kRearLeftDriveMotorPort = 2;
-const int kFrontRightDriveMotorPort = 4;
-const int kRearRightDriveMotorPort = 6;
+constexpr int kFrontLeftDriveMotorPort = 0;
+constexpr int kRearLeftDriveMotorPort = 2;
+constexpr int kFrontRightDriveMotorPort = 4;
+constexpr int kRearRightDriveMotorPort = 6;
 
-const int kFrontLeftTurningMotorPort = 1;
-const int kRearLeftTurningMotorPort = 3;
-const int kFrontRightTurningMotorPort = 5;
-const int kRearRightTurningMotorPort = 7;
+constexpr int kFrontLeftTurningMotorPort = 1;
+constexpr int kRearLeftTurningMotorPort = 3;
+constexpr int kFrontRightTurningMotorPort = 5;
+constexpr int kRearRightTurningMotorPort = 7;
 
-const std::array kFrontLeftTurningEncoderPorts = {0, 1};
-const std::array kRearLeftTurningEncoderPorts = {2, 3};
-const std::array kFrontRightTurningEncoderPorts = {4, 5};
-const std::array kRearRightTurningEncoderPorts = {5, 6};
+constexpr std::array kFrontLeftTurningEncoderPorts = {0, 1};
+constexpr std::array kRearLeftTurningEncoderPorts = {2, 3};
+constexpr std::array kFrontRightTurningEncoderPorts = {4, 5};
+constexpr std::array kRearRightTurningEncoderPorts = {5, 6};
 
-const bool kFrontLeftTurningEncoderReversed = false;
-const bool kRearLeftTurningEncoderReversed = true;
-const bool kFrontRightTurningEncoderReversed = false;
-const bool kRearRightTurningEncoderReversed = true;
+constexpr bool kFrontLeftTurningEncoderReversed = false;
+constexpr bool kRearLeftTurningEncoderReversed = true;
+constexpr bool kFrontRightTurningEncoderReversed = false;
+constexpr bool kRearRightTurningEncoderReversed = true;
 
-const std::array kFrontLeftDriveEncoderPorts = {0, 1};
-const std::array kRearLeftDriveEncoderPorts = {2, 3};
-const std::array kFrontRightDriveEncoderPorts = {4, 5};
-const std::array kRearRightDriveEncoderPorts = {5, 6};
+constexpr std::array kFrontLeftDriveEncoderPorts = {0, 1};
+constexpr std::array kRearLeftDriveEncoderPorts = {2, 3};
+constexpr std::array kFrontRightDriveEncoderPorts = {4, 5};
+constexpr std::array kRearRightDriveEncoderPorts = {5, 6};
 
-const bool kFrontLeftDriveEncoderReversed = false;
-const bool kRearLeftDriveEncoderReversed = true;
-const bool kFrontRightDriveEncoderReversed = false;
-const bool kRearRightDriveEncoderReversed = true;
+constexpr bool kFrontLeftDriveEncoderReversed = false;
+constexpr bool kRearLeftDriveEncoderReversed = true;
+constexpr bool kFrontRightDriveEncoderReversed = false;
+constexpr bool kRearRightDriveEncoderReversed = true;
 
-const auto kTrackWidth =
+constexpr auto kTrackWidth =
     .5_m;  // Distance between centers of right and left wheels on robot
-const auto kTrackLength =
+constexpr auto kTrackLength =
     .7_m;  // Distance between centers of front and back wheels on robot
 frc::SwerveDriveKinematics<4> kDriveKinematics{
     frc::Translation2d(kTrackLength / 2, kTrackWidth / 2),
@@ -63,33 +63,33 @@ frc::SwerveDriveKinematics<4> kDriveKinematics{
     frc::Translation2d(-kTrackLength / 2, kTrackWidth / 2),
     frc::Translation2d(-kTrackLength / 2, -kTrackWidth / 2)};
 
-const bool kGyroReversed = false;
+constexpr bool kGyroReversed = false;
 
 // These are example values only - DO NOT USE THESE FOR YOUR OWN ROBOT!
 // These characterization values MUST be determined either experimentally or
 // theoretically for *your* robot's drive. The RobotPy Characterization
 // Toolsuite provides a convenient tool for obtaining these values for your
 // robot.
-const auto ks = 1_V;
-const auto kv = .8 * 1_V * 1_s / 1_m;
-const auto ka = .15 * 1_V * 1_s * 1_s / 1_m;
+constexpr auto ks = 1_V;
+constexpr auto kv = .8 * 1_V * 1_s / 1_m;
+constexpr auto ka = .15 * 1_V * 1_s * 1_s / 1_m;
 
 // Example value only - as above, this must be tuned for your drive!
-const double kPFrontLeftVel = .5;
-const double kPRearLeftVel = .5;
-const double kPFrontRightVel = .5;
-const double kPRearRightVel = .5;
+constexpr double kPFrontLeftVel = .5;
+constexpr double kPRearLeftVel = .5;
+constexpr double kPFrontRightVel = .5;
+constexpr double kPRearRightVel = .5;
 }  // namespace DriveConstants
 
 namespace ModuleConstants {
-const int kEncoderCPR = 1024;
-const double kWheelDiameterMeters = .15;
-const double kEncoderDistancePerPulse =
+constexpr int kEncoderCPR = 1024;
+constexpr double kWheelDiameterMeters = .15;
+constexpr double kEncoderDistancePerPulse =
     // Assumes the encoders are directly mounted on the wheel shafts
     (kWheelDiameterMeters * 3.142) / static_cast<double>(kEncoderCPR);
 
-const double kPModuleTurningController = 1;
-const double kPModuleDriveController = 1;
+constexpr double kPModuleTurningController = 1;
+constexpr double kPModuleDriveController = 1;
 }  // namespace ModuleConstants
 
 namespace AutoConstants {
@@ -97,24 +97,24 @@ using radians_per_second_squared_t =
     units::compound_unit<units::radians,
                          units::inverse<units::squared<units::second>>>;
 
-const auto kMaxSpeed = units::meters_per_second_t(3);
-const auto kMaxAcceleration = units::meters_per_second_squared_t(3);
-const auto kMaxAngularSpeed = units::radians_per_second_t(3.142);
-const auto kMaxAngularAcceleration =
+constexpr auto kMaxSpeed = units::meters_per_second_t(3);
+constexpr auto kMaxAcceleration = units::meters_per_second_squared_t(3);
+constexpr auto kMaxAngularSpeed = units::radians_per_second_t(3.142);
+constexpr auto kMaxAngularAcceleration =
     units::unit_t<radians_per_second_squared_t>(3.142);
 
-const double kPXController = .5;
-const double kPYController = .5;
-const double kPThetaController = .5;
+constexpr double kPXController = .5;
+constexpr double kPYController = .5;
+constexpr double kPThetaController = .5;
 
 //
 
-const frc::TrapezoidProfile::Constraints kThetaControllerConstraints{
+constexpr frc::TrapezoidProfile::Constraints kThetaControllerConstraints{
     units::meters_per_second_t(kMaxAngularSpeed.to<double>()),
     units::meters_per_second_squared_t(kMaxAngularAcceleration.to<double>())};
 
 }  // namespace AutoConstants
 
 namespace OIConstants {
-const int kDriverControllerPort = 1;
+constexpr int kDriverControllerPort = 1;
 }  // namespace OIConstants
