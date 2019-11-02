@@ -77,7 +77,6 @@ public class RobotContainer {
 
   }
 
-
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
@@ -112,29 +111,32 @@ public class RobotContainer {
     MecanumFollowerCommand m_mecanumFollowerCommand = new MecanumFollowerCommand(
         exampleTrajectory,
         m_robotDrive::getPose,
-
+        
         ksVolts,
         kvVoltSecondsPerMeter,
         kaVoltSecondsSquaredPerMeter,
         kDriveKinematics,
 
+        //Position contollers
         new PIDController(kPXController, 0, 0),
         new PIDController(kPYController, 0, 0),
         new ProfiledPIDController(kPThetaController, 0, 0, kThetaControllerConstraints),
 
+        //Needed for normalizing wheel speeds
         kMaxSpeedMetersPerSecond,
 
+        //Velocity PID's
         new PIDController(kPFrontLeftVel, 0, 0),
         new PIDController(kPRearLeftVel, 0, 0),
         new PIDController(kPFrontRightVel, 0, 0),
         new PIDController(kPRearRightVel, 0, 0),
 
-        () -> new MecanumDriveWheelSpeeds(m_robotDrive.getFrontLeftEncoder().getRate(),
+        () -> new MecanumDriveWheelSpeeds(m_robotDrive.getFrontLeftEncoder().getRate(), //Supplier for the wheel speeds
             m_robotDrive.getFrontRightEncoder().getRate(),
             m_robotDrive.getRearLeftEncoder().getRate(),
             m_robotDrive.getRearRightEncoder().getRate()),
 
-        (frontLeft) -> m_robotDrive.setFrontLeftSpeedController(frontLeft/ 12.),
+        (frontLeft) -> m_robotDrive.setFrontLeftSpeedController(frontLeft/ 12.), //Consumers for the output voltages
         (rearLeft) -> m_robotDrive.setRearLeftSpeedController(rearLeft/ 12.),
         (frontRight) -> m_robotDrive.setFrontRightSpeedController(frontRight/ 12.),
         (rearRight) -> m_robotDrive.setRearRightSpeedController(rearRight/ 12.),

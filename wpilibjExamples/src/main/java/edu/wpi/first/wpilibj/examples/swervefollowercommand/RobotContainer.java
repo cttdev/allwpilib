@@ -112,6 +112,7 @@ public class RobotContainer {
         m_robotDrive::getPose, //Functional interface to feed supplier
         kDriveKinematics,
 
+        //Position controllers
         new PIDController(kPXController, 0, 0),
         new PIDController(kPYController, 0, 0),
         new ProfiledPIDController(kPThetaController, 0, 0, kThetaControllerConstraints),

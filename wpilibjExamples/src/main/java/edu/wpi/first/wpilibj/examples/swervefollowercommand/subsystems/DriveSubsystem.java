@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
 
+  //Robot swerve modules
   private final SwerveModule m_frontLeft = new SwerveModule(kFrontLeftDriveMotorPort,
     kFrontLeftTurningMotorPort,
     kFrontLeftDriveEncoderPorts,
@@ -61,9 +62,7 @@ public class DriveSubsystem extends SubsystemBase {
   /**
    * Creates a new DriveSubsystem.
    */
-  public DriveSubsystem() {
-
-  }
+  public DriveSubsystem() {}
 
   @Override
   public void periodic() {
@@ -120,6 +119,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   /**
   * Sets the swerve ModuleStates.
+  *
+  * @param desiredStates  The desired SwerveModule states.
   */
   public void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.normalizeWheelSpeeds(desiredStates, kMaxSpeedMetersPerSecond);

@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory;
  * A command that uses two PID controllers ({@link PIDController}) and a ProfiledPIDController ({@link ProfiledPIDController}) to follow a trajectory
  * {@link Trajectory} with a mecanum drive.
  *
- * <p>The command handles trajectory-following, Velocity PID calculations, and feedforwards internally.  This
+ * <p>The command handles trajectory-following, Velocity PID calculations, and feedforwards internally. This
  * is intended to be a more-or-less "complete solution" that can be used by teams without a great
  * deal of controls expertise.
  *
@@ -71,6 +71,8 @@ public class MecanumFollowerCommand extends CommandBase {
    * <p>Note: The controllers will *not* set the outputVolts to zero upon completion of the path -
    * this
    * is left to the user, since it is not appropriate for paths with nonstationary endstates.
+   * 
+   * <p>Note2: The rotation controller will calculate the rotation bsed on the final pose in the trajectory, not the poses at each time step.
    *
    * @param trajectory                        The trajectory to follow.
    * @param pose                              A function that supplies the robot pose - use one of
@@ -81,8 +83,8 @@ public class MecanumFollowerCommand extends CommandBase {
    * @param kaVoltSecondsSquaredPerMeter      Acceleration-proportional feedforward term for the robot
    *                                          drive.
    * @param kinematics                        The kinematics for the robot drivetrain.
-   * @param xController                       The Trajectory Tracker PID controller for the x direction.
-   * @param yController                       The Trajectory Tracker PID controller for the y direction.
+   * @param xController                       The Trajectory Tracker PID controller for the robot's x position.
+   * @param yController                       The Trajectory Tracker PID controller for the robot's y position.
    * @param thetaController                   The Trajectory Tracker PID controller for angle for the robot.
    * @param maxWheelVelocityMetersPerSecond   The maxium velocity of a drivetrain wheel.
    * @param frontLeftController               The front left wheel velocty PID.
@@ -157,6 +159,8 @@ public class MecanumFollowerCommand extends CommandBase {
    * <p>Note: The controllers will *not* set the outputVolts to zero upon completion of the path -
    * this
    * is left to the user, since it is not appropriate for paths with nonstationary endstates.
+   * 
+   * <p>Note2: The rotation controller will calculate the rotation bsed on the final pose in the trajectory, not the poses at each time step.
    *
    * @param trajectory                        The trajectory to follow.
    * @param pose                              A function that supplies the robot pose - use one of
@@ -167,8 +171,8 @@ public class MecanumFollowerCommand extends CommandBase {
    * @param kaVoltSecondsSquaredPerMeter      Acceleration-proportional feedforward term for the robot
    *                                          drive.
    * @param kinematics                        The kinematics for the robot drivetrain.
-   * @param xController                       The Trajectory Tracker PID controller for the x direction.
-   * @param yController                       The Trajectory Tracker PID controller for the y direction.
+   * @param xController                       The Trajectory Tracker PID controller for the robot's x position.
+   * @param yController                       The Trajectory Tracker PID controller for the robot's y position.
    * @param thetaController                   The Trajectory Tracker PID controller for angle for the robot.
    * @param maxWheelVelocityMetersPerSecond   The maxium velocity of a drivetrain wheel.
    * @param frontLeftController               The front left wheel velocty PID.
@@ -180,8 +184,7 @@ public class MecanumFollowerCommand extends CommandBase {
    * @param rearLeftOutputMetersPerSecond     The rear left wheel output in volts.`
    * @param frontRightOutputMetersPerSecond   The front right wheel output in volts.
    * @param rearRightOutputMetersPerSecond    The rear right wheel output in volts.
-   * @param
-   *  requirements                      The subsystems to require.
+   * @param requirements                      The subsystems to require.
    */
 
   public MecanumFollowerCommand(Trajectory trajectory,
@@ -228,7 +231,7 @@ public class MecanumFollowerCommand extends CommandBase {
   @Override
   public void initialize() {
     var initialState = m_trajectory.sample(0);
-    m_finalPose = m_trajectory.sample(m_trajectory.getTotalTimeSeconds()).poseMeters;
+    m_finalPose = m_trajectory.sample(m_trajectory.getTotalTimeSeconds()).poseMeters; // Sample final pose to get robot rotation
 
     var initialXVelocity = initialState.velocityMetersPerSecond * Math.sin(initialState.poseMeters.getRotation().getRadians());
     var initialYVelocity = initialState.velocityMetersPerSecond * Math.cos(initialState.poseMeters.getRotation().getRadians());
@@ -259,7 +262,9 @@ public class MecanumFollowerCommand extends CommandBase {
 
     double targetAngularVel = m_thetaController.calculate(
       m_pose.get().getRotation().getRadians(),
-       m_finalPose.getRotation().getRadians());
+       m_finalPose.getRotation().getRadians()); 
+       // The robot will go to the desired rotation of the final pose in the trajecotry,
+       // not following the poses at individual states.
 
     double vRef = m_desiredState.velocityMetersPerSecond;
 
