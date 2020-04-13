@@ -44,12 +44,13 @@ public class LinearSystemLoopTest {
 
     var qElms = new Matrix<N2, N1>(new SimpleMatrix(2, 1));
     qElms.getStorage().setColumn(0, 0, 0.02, 0.4);
+    var rho = 1;
     var rElms = new Matrix<N1, N1>(new SimpleMatrix(1, 1));
     rElms.getStorage().setColumn(0, 0, 12.0);
     var dt = 0.00505;
 
     var controller = new LinearQuadraticRegulator<>(
-            plant, qElms, rElms, dt);
+            plant, qElms, rho, rElms, dt);
 
     m_loop = new LinearSystemLoop<>(Nat.N2(), plant, controller, observer);
   }
@@ -116,10 +117,11 @@ public class LinearSystemLoopTest {
             new MatBuilder<>(Nat.N1(), Nat.N1()).fill(0.01), kDt);
 
     var qElms = new MatBuilder<>(Nat.N1(), Nat.N1()).fill(9.0);
+    var rho = 1;
     var rElms = new MatBuilder<>(Nat.N1(), Nat.N1()).fill(12.0);
 
     var controller = new LinearQuadraticRegulator<>(
-            plant, qElms, rElms, kDt);
+            plant, qElms, rho, rElms, kDt);
 
     var loop = new LinearSystemLoop<>(Nat.N1(), plant, controller, observer);
 

@@ -69,16 +69,19 @@ public class LinearQuadraticRegulator<S extends Num, I extends Num,
    *
    * @param plant     The plant being controlled.
    * @param qelms     The maximum desired error tolerance for each state.
+   * @param rho       A weighting factor that balances control effort and state excursion. Greater
+   *                  values penalize state excursion more heavily. 1 is a good starting value.
    * @param relms     The maximum desired control effort for each input.
    * @param dtSeconds Discretization timestep.
    */
   public LinearQuadraticRegulator(
           LinearSystem<S, I, O> plant,
           Matrix<S, N1> qelms,
+          double rho,
           Matrix<I, N1> relms,
           double dtSeconds
   ) {
-    this(plant.getA(), plant.getB(), qelms, relms, dtSeconds);
+    this(plant.getA(), plant.getB(), qelms, rho, relms, dtSeconds);
   }
 
   /**

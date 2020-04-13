@@ -64,6 +64,8 @@ public class Robot extends TimedRobot {
   private final LinearQuadraticRegulator<N1, N1, N1> m_controller
           = new LinearQuadraticRegulator<>(m_flywheelPlant,
           VecBuilder.fill(8.0), // Velocity error tolerance
+          1, // rho used to adjust the control effort applied based on the state deviation.
+             // 1 is a good starting value.
           VecBuilder.fill(12.0), // Control effort (voltage) tolerance
           0.020);
 

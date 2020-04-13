@@ -19,9 +19,9 @@ import edu.wpi.first.wpiutil.math.Num;
 import edu.wpi.first.wpiutil.math.numbers.N1;
 
 /**
- * A Kalman filter combines predictions from a model and measurements to give an estimate of the true
- * system state. This is useful because many states cannot be measured directly as a result of
- * sensor noise, or because the state is "hidden".
+ * A Kalman filter combines predictions from a model and measurements to give an estimate
+ * of the true system state. This is useful because many states cannot be measured
+ * directly as a result of sensor noise, or because the state is "hidden".
  *
  * <p>Kalman filters use a K gain matrix to determine whether to trust the model or measurements
  * more. Kalman filter theory uses statistics to compute an optimal K gain which minimizes the sum
