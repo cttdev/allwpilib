@@ -18,11 +18,9 @@ import edu.wpi.first.wpilibj.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpiutil.math.MatBuilder;
 import edu.wpi.first.wpiutil.math.Matrix;
-import edu.wpi.first.wpiutil.math.MatrixUtils;
 import edu.wpi.first.wpiutil.math.Nat;
 import edu.wpi.first.wpiutil.math.Pair;
 import edu.wpi.first.wpiutil.math.numbers.N1;
-import edu.wpi.first.wpiutil.math.numbers.N10;
 import edu.wpi.first.wpiutil.math.numbers.N2;
 import edu.wpi.first.wpiutil.math.numbers.N3;
 import edu.wpi.first.wpiutil.math.numbers.N4;
@@ -35,7 +33,7 @@ import edu.wpi.first.wpiutil.math.numbers.N7;
  * differential drive, which can be created from known linear and angular
  * Kv, and Ka terms with {@link LinearSystemId#identifyDrivetrainSystem}.
  * This is then used to calculate the model dynamics
- * {@link LTVDiffDriveController#getDynamics}.
+ * {@link LTVDiffDriveController#dynamics}.
  *
  * <p>This controller is advantageous over the {@link LTVUnicycleController}
  * due to the fact that it is easier to specify the relative weighting of
@@ -54,20 +52,21 @@ import edu.wpi.first.wpiutil.math.numbers.N7;
  */
 @SuppressWarnings({"ParameterName", "LocalVariableName", "MemberName", "PMD.SingularField"})
 public class LTVDiffDriveController {
-  private final double m_rb;
   private final LinearSystem<N2, N2, N2> m_plant;
+  private final double m_rb;
+  private final Matrix<N5, N1> m_controllerQ;
+  private final Matrix<N2, N1> m_controllerR;
+  private final double m_dt;
 
   private Matrix<N5, N1> m_nextR;
   private Matrix<N2, N1> m_uncappedU;
 
   private Matrix<N5, N2> m_B;
-  private Matrix<N2, N5> m_K0;
-  private Matrix<N2, N5> m_K1;
 
   private Matrix<N5, N1> m_stateError;
 
-  private Pose2d m_poseTolerance;
-  private double m_velocityTolerance;
+  private Pose2d m_poseTolerance = new Pose2d();
+  private double m_velocityTolerance = 2.0;
 
   private DifferentialDriveKinematics m_kinematics;
 
@@ -118,31 +117,27 @@ public class LTVDiffDriveController {
           DifferentialDriveKinematics kinematics,
           double dtSeconds) {
     this.m_plant = plant;
-    this.m_kinematics = kinematics;
     this.m_rb = kinematics.trackWidthMeters / 2.0;
-
-    m_poseTolerance = new Pose2d();
-    m_velocityTolerance = 0.0;
+    this.m_controllerQ = controllerQ;
+    this.m_controllerR = controllerR;
+    this.m_dt = dtSeconds;
+    this.m_kinematics = kinematics;
 
     reset();
 
-    var x0 = MatrixUtils.zeros(Nat.N10());
+    var x0 = MatrixUtils.zeros(Nat.N5());
     x0.set(State.kLeftVelocity.value, 0, 1e-9);
     x0.set(State.kRightVelocity.value, 0, 1e-9);
 
-    var x1 = MatrixUtils.zeros(Nat.N10());
-    x1.set(State.kLeftVelocity.value, 0, 1);
-    x1.set(State.kRightVelocity.value, 0, 1);
-
     var u0 = MatrixUtils.zeros(Nat.N2());
 
-    var a0 = NumericalJacobian.numericalJacobianX(Nat.N10(), Nat.N10(), this::getDynamics, x0, u0)
-            .block(Nat.N5(), Nat.N5(), new Pair<>(0, 0));
-    var a1 = NumericalJacobian.numericalJacobianX(Nat.N10(), Nat.N10(), this::getDynamics, x1, u0)
-            .block(Nat.N5(), Nat.N5(), new Pair<>(0, 0));
+    var a0 = NumericalJacobian.numericalJacobianX(Nat.N5(), Nat.N5(), this::dynamics, x0, u0)
+            .block(Nat.N5(), Nat.N5(), 0, 0);
+    var a1 = NumericalJacobian.numericalJacobianX(Nat.N5(), Nat.N5(), this::dynamics, x1, u0)
+            .block(Nat.N5(), Nat.N5(), 0, 0);
 
-    m_B = NumericalJacobian.numericalJacobianU(Nat.N10(), Nat.N2(),
-            this::getDynamics, x0, u0).block(Nat.N5(), Nat.N2(), new Pair<>(0, 0));
+    m_B = NumericalJacobian.numericalJacobianU(Nat.N5(), Nat.N2(),
+            this::dynamics, x0, u0).block(Nat.N5(), Nat.N2(), 0, 0);
 
     m_K0 = new LinearQuadraticRegulator<N5, N2, N3>(a0, m_B,
             controllerQ, rho, controllerR, dtSeconds).getK();
@@ -184,40 +179,11 @@ public class LTVDiffDriveController {
     K.set(1, 0, -Math.sin(x.get(2, 0)));
     K.set(1, 1, Math.cos(x.get(2, 0)));
 
-    Matrix<N5, N1> error = new Matrix<>(r.getStorage().minus(
-            x.getStorage().extractMatrix(0, 5, 0, 1)));
+    Matrix<N5, N1> error = r.minus(x);
 
     error.set(State.kHeading.value, 0, normalizeAngle(error.get(State.kHeading.value, 0)));
 
     return K.times(inRobotFrame).times(error);
-  }
-
-  @SuppressWarnings("JavadocMethod")
-  protected Matrix<N10, N1> getDynamics(Matrix<N10, N1> x, Matrix<N2, N1> u) {
-    Matrix<N4, N2> B = new Matrix<>(new SimpleMatrix(4, 2));
-    B.getStorage().insertIntoThis(0, 0, m_plant.getB().getStorage());
-    B.getStorage().insertIntoThis(2, 0, new SimpleMatrix(2, 2));
-
-    Matrix<N4, N7> A = new Matrix<>(new SimpleMatrix(4, 7));
-    A.getStorage().insertIntoThis(0, 0, m_plant.getA().getStorage());
-
-    A.getStorage().insertIntoThis(2, 0, SimpleMatrix.identity(2));
-    A.getStorage().insertIntoThis(0, 2, new SimpleMatrix(4, 2));
-    A.getStorage().insertIntoThis(0, 4, B.getStorage());
-    A.getStorage().setColumn(6, 0, 0, 0, 1, -1);
-
-    var v = (x.get(State.kLeftVelocity.value, 0) + x.get(State.kRightVelocity.value, 0)) / 2.0;
-
-    var result = new Matrix<N10, N1>(new SimpleMatrix(10, 1));
-    result.set(0, 0, v * Math.cos(x.get(State.kHeading.value, 0)));
-    result.set(1, 0, v * Math.sin(x.get(State.kHeading.value, 0)));
-    result.set(2, 0, (x.get(State.kRightVelocity.value, 0)
-            - x.get(State.kLeftVelocity.value, 0)) / (2.0 * m_rb));
-
-    result.getStorage().insertIntoThis(3, 0, A.times(new Matrix<N7, N1>(
-            x.getStorage().extractMatrix(3, 10, 0, 1))).plus(B.times(u)).getStorage());
-    result.getStorage().insertIntoThis(7, 0, new SimpleMatrix(3, 1));
-    return result;
   }
 
   /**
@@ -251,7 +217,7 @@ public class LTVDiffDriveController {
 
   /**
    * Returns the current controller reference in the form
-   * [X, Y, Heading, LeftVelocity, RightVelocity, LeftPosition].
+   * [X, Y, Heading, LeftVelocity, RightVelocity].
    *
    * @return Matrix [N5, N1] The reference.
    */
@@ -322,8 +288,42 @@ public class LTVDiffDriveController {
    * Resets the internal state of the controller.
    */
   public void reset() {
-    m_nextR = MatrixUtils.zeros(Nat.N5(), Nat.N1());
-    m_uncappedU = MatrixUtils.zeros(Nat.N2(), Nat.N1());
+    m_nextR = Matrix.zeros(Nat.N5(), Nat.N1());
+    m_uncappedU = Matrix.zeros(Nat.N2(), Nat.N1());
+  }
+
+  @SuppressWarnings("JavadocMethod")
+  protected Matrix<N5, N1> dynamics(Matrix<N5, N1> x, Matrix<N2, N1> u) {
+    var v = (x.get(State.kLeftVelocity.value, 0) + x.get(State.kRightVelocity.value, 0)) / 2.0;
+
+    var result = Matrix.zeros(Nat.N5(), Nat.N1());
+    result.set(0, 0, v * Math.cos(x.get(State.kHeading.value, 0)));
+    result.set(1, 0, v * Math.sin(x.get(State.kHeading.value, 0)));
+    result.set(2, 0, (x.get(State.kRightVelocity.value, 0)
+            - x.get(State.kLeftVelocity.value, 0)) / (2.0 * m_rb));
+
+    result.assignBlock(3, 0, m_plant.getA().times(x.block(2, 1, 3, 0)).plus(B.times(u)));
+    return result;
+  }
+
+  private Matrix<N2, N1> controller(
+    // This implements the linear time-varying differential drive controller in
+    // theorem 8.6.4 of https://tavsys.net/controls-in-frc.
+    const Eigen::Matrix<double, 5, 1>& x,
+    const Eigen::Matrix<double, 5, 1>& r) {
+    Eigen::Matrix<double, 2, 5> K = ControllerGainForState(x);
+
+    Eigen::Matrix<double, 5, 5> inRobotFrame =
+        Eigen::Matrix<double, 5, 5>::Identity();
+    inRobotFrame(0, 0) = std::cos(x(2));
+    inRobotFrame(0, 1) = std::sin(x(2));
+    inRobotFrame(1, 0) = -std::sin(x(2));
+    inRobotFrame(1, 1) = std::cos(x(2));
+
+    Eigen::Matrix<double, 5, 1> error = r - x;
+    error(State::kHeading) =
+      NormalizeAngle(units::radian_t{error(State::kHeading)}).to<double>();
+    return K * inRobotFrame * error;
   }
 
   @SuppressWarnings("JavadocMethod")
@@ -342,12 +342,7 @@ public class LTVDiffDriveController {
     kY(1),
     kHeading(2),
     kLeftVelocity(3),
-    kRightVelocity(4),
-    kLeftPosition(5),
-    kRightPosition(6),
-    kLeftVoltageError(7),
-    kRightVoltageError(8),
-    kAngularVelocityError(9);
+    kRightVelocity(4);
 
     private final int value;
 

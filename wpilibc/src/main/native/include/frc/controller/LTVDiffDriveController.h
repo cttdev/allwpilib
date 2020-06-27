@@ -116,7 +116,7 @@ class LTVDiffDriveController {
 
   /**
    * Returns the current controller reference in the form
-   * [X, Y, Heading, LeftVelocity, RightVelocity, LeftPosition].
+   * [X, Y, Heading, LeftVelocity, RightVelocity].
    *
    * @return Matrix [5, 1] The reference.
    */
@@ -164,25 +164,24 @@ class LTVDiffDriveController {
    */
   void Reset();
 
-  Vector<2> Controller(const Vector<5>& x, const Vector<5>& r);
-
-  Vector<10> Dynamics(const Vector<10>& x, const Vector<2>& u);
+  Vector<5> Dynamics(const Vector<5>& x, const Vector<2>& u);
 
  private:
   LinearSystem<2, 2, 2> m_plant;
   units::meter_t m_rb;
+  std::array<double, 5> m_controllerQ;
+  std::array<double, 2> m_controllerR;
+  units::second_t m_dt;
 
   Vector<5> m_nextR;
   Vector<2> m_uncappedU;
 
   Eigen::Matrix<double, 5, 2> m_B;
-  Eigen::Matrix<double, 2, 5> m_K0;
-  Eigen::Matrix<double, 2, 5> m_K1;
 
   Vector<5> m_stateError;
 
   Pose2d m_poseTolerance;
-  units::meters_per_second_t m_velocityTolerance;
+  units::meters_per_second_t m_velocityTolerance = 2_mps;
 
   DifferentialDriveKinematics m_kinematics;
 
@@ -193,11 +192,6 @@ class LTVDiffDriveController {
     static constexpr int kHeading = 2;
     static constexpr int kLeftVelocity = 3;
     static constexpr int kRightVelocity = 4;
-    static constexpr int kLeftPosition = 5;
-    static constexpr int kRightPosition = 6;
-    static constexpr int kLeftVoltageError = 7;
-    static constexpr int kRightVoltageError = 8;
-    static constexpr int kAngularVelocityError = 9;
   };
 
   class Input {
@@ -205,6 +199,16 @@ class LTVDiffDriveController {
     static constexpr int kLeftVoltage = 0;
     static constexpr int kRightVoltage = 1;
   };
+
+  Vector<2> Controller(const Vector<5>& x, const Vector<5>& r);
+
+  /**
+   * Returns the linear time-varying controller gain for the given state.
+   *
+   * @param x The state vector.
+   */
+  Eigen::Matrix<double, 2, 5> ControllerGainForState(
+      const Eigen::Matrix<double, 5, 1>& x);
 
   units::radian_t NormalizeAngle(units::radian_t angle);
 };

@@ -125,10 +125,8 @@ public class LinearQuadraticRegulator<S extends Num, I extends Num,
 
     var S = Drake.discreteAlgebraicRiccatiEquation(discA, discB, Q, R);
 
-    var temp = discB.getStorage().transpose().mult(S).mult(discB.getStorage())
-          .plus(R.getStorage());
-    m_K = new Matrix<>(temp.solve(discB.getStorage().transpose().mult(S)
-          .mult(discA.getStorage())));
+    var temp = discB.transpose().mult(S).mult(discB).plus(R);
+    m_K = temp.solve(discB.transpose().mult(S).mult(discA));
 
     m_r = new Matrix<>(new SimpleMatrix(B.getNumRows(), 1));
     m_u = new Matrix<>(new SimpleMatrix(B.getNumCols(), 1));
@@ -150,8 +148,8 @@ public class LinearQuadraticRegulator<S extends Num, I extends Num,
   ) {
     m_K = k;
 
-    m_r = new Matrix<>(new SimpleMatrix(states.getNum(), 1));
-    m_u = new Matrix<>(new SimpleMatrix(inputs.getNum(), 1));
+    m_r = Matrix.vec(states);
+    m_u = Matrix.vec(inputs);
 
     reset();
   }
@@ -209,8 +207,8 @@ public class LinearQuadraticRegulator<S extends Num, I extends Num,
    * Resets the controller.
    */
   public void reset() {
-    m_r.getStorage().fill(0.0);
-    m_u.getStorage().fill(0.0);
+    m_r.fill(0.0);
+    m_u.fill(0.0);
   }
 
   /**

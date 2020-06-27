@@ -301,11 +301,7 @@ public class UnscentedKalmanFilter<S extends Num, I extends Num,
     // P_y^T K^T = P_{xy}^T
     // K^T = P_y^T.solve(P_{xy}^T)
     // K = (P_y^T.solve(P_{xy}^T)^T
-    Matrix<S, R> K = new Matrix<>(
-          Py.transpose().getStorage()
-                .solve(Pxy.transpose().getStorage())
-                .transpose()
-    );
+    final var K = Py.transpose().solve(Pxy.transpose()).transpose();
 
     m_xHat = m_xHat.plus(K.times(y.minus(yHat)));
     m_P = m_P.minus(K.times(Py).times(K.transpose()));

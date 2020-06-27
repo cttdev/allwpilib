@@ -30,6 +30,20 @@ public class Matrix<R extends Num, C extends Num> {
 
   private final SimpleMatrix m_storage;
 
+  public Matrix() {
+    this.m_storage = new SimpleMatrix(R.getNum(), C.getNum());
+  }
+
+  /**
+   * Constructs a new matrix with the given storage.
+   * Caller should make sure that the provided generic bounds match the shape of the provided matrix
+   *
+   * @param storage The {@link SimpleMatrix} to back this value
+   */
+  public Matrix(Matrix other) {
+    this.m_storage = other.m_storage;
+  }
+
   /**
    * Gets the number of columns in this matrix.
    *
@@ -88,6 +102,16 @@ public class Matrix<R extends Num, C extends Num> {
    */
   public final void setColumn(int column, Matrix<R, N1> val) {
     this.m_storage.setColumn(column, 0, val.getStorage().getDDRM().getData());
+  }
+
+
+  /**
+   * Sets all the elements in this matrix equal to the specified value.
+   *
+   * @param value The value each element is set to.
+   */
+  public void fill(double value) {
+    this.m_storage.fill(value);
   }
 
   /**
@@ -258,6 +282,17 @@ public class Matrix<R extends Num, C extends Num> {
   }
 
   /**
+   * Returns the solution x to the equation Ax = b, where A is the matrix
+   * "this".
+   *
+   * @param b The right-hand side of the equation to solve.
+   * @return The solution to the linear system.
+   */
+  public final Matrix<R, N1> solve(Matrix<R, N1> b) {
+    return new Matrix<>(this.m_storage.solve(b.m_storage));
+  }
+
+  /**
    * Computes the matrix exponential using Eigen's solver.
    * This method only works for square matrices, and will
    * otherwise throw an {@link MatrixDimensionException}.
@@ -349,8 +384,7 @@ public class Matrix<R extends Num, C extends Num> {
   }
 
   /**
-   * Extracts a given row into a row vector, with this Matrix as the underlying storage (i.e.
-   * changes made to this Matrix will affect the extracted vector.)
+   * Extracts a given row into a row vector with new underlying storage.
    *
    * @param row The row to extract a vector from.
    * @return A row vector from the given row.
@@ -360,8 +394,7 @@ public class Matrix<R extends Num, C extends Num> {
   }
 
   /**
-   * Extracts a given column into a column vector, with this Matrix as the underlying storage (i.e.
-   * changes made to this Matrix will affect the extracted vector.)
+   * Extracts a given column into a column vector with new underlying storage.
    *
    * @param column The column to extract a vector from.
    * @return A column vector from the given column.
@@ -371,40 +404,34 @@ public class Matrix<R extends Num, C extends Num> {
   }
 
   /**
-   * Extracts a matrix of a given size and start position, with this Matrix as
-   * the underlying storage (i.e. changes made to this Matrix will affect the extracted vector.)
+   * Extracts a matrix of a given size and start position with new underlying
+   * storage.
    *
    * @param height The number of rows of the extracted matrix.
    * @param width  The number of columns of the extracted matrix.
-   * @param startingLocation A pair with the starting row and column of the extracted matrix.
+   * @param startingRow The starting row of the extracted matrix.
+   * @param startingCol The starting column of the extracted matrix.
    * @return A column vector from the given column.
    */
   public final <R2 extends Num, C2 extends Num> Matrix<R2, C2> block(
-      Nat<R2> height, Nat<C2> width, Pair<Integer, Integer> startingLocation) {
+      Nat<R2> height, Nat<C2> width, int startingRow, int startingCol) {
     return new Matrix<>(this.m_storage.extractMatrix(
-      startingLocation.getFirst(),
-      height.getNum() + startingLocation.getFirst(),
-      startingLocation.getSecond(),
-      width.getNum() + startingLocation.getSecond()));
+      startingRow,
+      height.getNum() + startingRow,
+      startingCol,
+      width.getNum() + startingCol));
   }
 
   /**
-   * Returns the EJML {@link SimpleMatrix} backing this wrapper.
+   * Assign a matrix of a given size and start position.
    *
-   * @return The untyped EJML {@link SimpleMatrix}.
+   * @param height The number of rows of the extracted matrix.
+   * @param width  The number of columns of the extracted matrix.
+   * @param startingRow The starting row of the extracted matrix.
+   * @param startingCol The starting column of the extracted matrix.
    */
-  public final SimpleMatrix getStorage() {
-    return this.m_storage;
-  }
-
-  /**
-   * Constructs a new matrix with the given storage.
-   * Caller should make sure that the provided generic bounds match the shape of the provided matrix
-   *
-   * @param storage The {@link SimpleMatrix} to back this value
-   */
-  public Matrix(SimpleMatrix storage) {
-    this.m_storage = Objects.requireNonNull(storage);
+  public void assignBlock(int startingRow, int startingCol, Matrix other) {
+    this.m_storage.insertIntoThis(startingRow, startingCol, other.m_storage);
   }
 
   @Override
@@ -412,4 +439,77 @@ public class Matrix<R extends Num, C extends Num> {
     return m_storage.toString();
   }
 
+  /**
+   * Creates a new matrix of zeros.
+   *
+   * @param rows The number of rows in the matrix.
+   * @param cols The number of columns in the matrix.
+   * @param <R> The number of rows in the matrix as a generic.
+   * @param <C> The number of columns in the matrix as a generic.
+   * @return An RxC matrix filled with zeros.
+   */
+  @SuppressWarnings("LineLength")
+  public static <R extends Num, C extends Num> Matrix<R, C> zeros(Nat<R> rows, Nat<C> cols) {
+    return new Matrix<>(
+        new SimpleMatrix(Objects.requireNonNull(rows).getNum(), Objects.requireNonNull(cols).getNum()));
+  }
+
+  /**
+   * Creates a new vector of zeros.
+   *
+   * @param nums The size of the desired vector.
+   * @param <N> The size of the desired vector as a generic.
+   * @return A vector of size N filled with zeros.
+   */
+  public static <N extends Num> Matrix<N, N1> zeros(Nat<N> nums) {
+    return new Matrix<>(new SimpleMatrix(Objects.requireNonNull(nums).getNum(), 1));
+  }
+
+  /**
+   * Creates the identity matrix of the given dimension.
+   *
+   * @param dim The dimension of the desired matrix.
+   * @param <D> The dimension of the desired matrix as a generic.
+   * @return The DxD identity matrix.
+   */
+  public static <D extends Num> Matrix<D, D> eye(Nat<D> dim) {
+    return new Matrix<>(SimpleMatrix.identity(Objects.requireNonNull(dim).getNum()));
+  }
+
+  /**
+   * Creates the identity matrix of the given dimension.
+   *
+   * @param dim The dimension of the desired matrix.
+   * @param <D> The dimension of the desired matrix.
+   * @return The DxD identity matrix.
+   */
+  public static <D extends Num> Matrix<D, D> eye(D dim) {
+    return new Matrix<>(SimpleMatrix.identity(Objects.requireNonNull(dim).getNum()));
+  }
+
+  /**
+   * Entrypoint to the MatBuilder class for creation
+   * of custom matrices with the given dimensions and contents.
+   *
+   * @param rows The number of rows of the desired matrix.
+   * @param cols The number of columns of the desired matrix.
+   * @param <R> The number of rows of the desired matrix as a generic.
+   * @param <C> The number of columns of the desired matrix as a generic.
+   * @return A builder to construct the matrix.
+   */
+  public static <R extends Num, C extends Num> MatBuilder<R, C> mat(Nat<R> rows, Nat<C> cols) {
+    return new MatBuilder<>(rows, cols);
+  }
+
+  /**
+   * Entrypoint to the VecBuilder class for creation
+   * of custom vectors with the given size and contents.
+   *
+   * @param dim The dimension of the vector.
+   * @param <D> The dimension of the vector as a generic.
+   * @return A builder to construct the vector.
+   */
+  public static <D extends Num> VecBuilder<D> vec(Nat<D> dim) {
+    return new VecBuilder<>(dim);
+  }
 }

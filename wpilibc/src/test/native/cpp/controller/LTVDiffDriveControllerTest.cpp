@@ -50,12 +50,12 @@ TEST(LTVDiffDriveControllerTest, TrackingTest) {
   LTVDiffDriveController controller{
       plant, {0.0625, 0.125, 2.5, 0.95, 0.95}, {12.0, 12.0}, kinematics, kDt};
 
-  std::function<Eigen::Matrix<double, 10, 1>(
-      const Eigen::Matrix<double, 10, 1>&, const Eigen::Matrix<double, 2, 1>&)>
+  std::function<Eigen::Matrix<double, 5, 1>(const Eigen::Matrix<double, 5, 1>&,
+                                            const Eigen::Matrix<double, 2, 1>&)>
       modelDynamics =
           [&](auto& x, auto& u) { return controller.Dynamics(x, u); };
 
-  ControlAffinePlantInversionFeedforward<10, 2> feedforward{modelDynamics, kDt};
+  ControlAffinePlantInversionFeedforward<5, 2> feedforward{modelDynamics, kDt};
 
   frc::DifferentialDriveStateEstimator estimator{
       plant,
@@ -85,8 +85,8 @@ TEST(LTVDiffDriveControllerTest, TrackingTest) {
   auto t = 0.0_s;
   auto totalTime = trajectory.TotalTime();
 
-  Eigen::Matrix<double, 10, 1> trueXhat;
-  trueXhat.setZero();
+  Eigen::Matrix<double, 5, 1> x;
+  x.setZero();
 
   Eigen::Matrix<double, 2, 1> u;
   u.setZero();
@@ -97,8 +97,11 @@ TEST(LTVDiffDriveControllerTest, TrackingTest) {
   std::cout << "xhat x, xhat y, xhat heading, traj x, traj y, traj heading\n";
 
   while (t <= totalTime) {
+    Eigen::Matrix<double, 10, 1> xAug;
+    xAug.setZero();
+    xAug.block<5, 1>(0, 0) = x;
     Eigen::Matrix<double, 3, 1> y = estimator.LocalMeasurementModel(
-        trueXhat, Eigen::Matrix<double, 2, 1>::Zero());
+        xAug, Eigen::Matrix<double, 2, 1>::Zero());
 
     Eigen::Matrix<double, 10, 1> currentState = estimator.UpdateWithTime(
         units::radian_t(y(0, 0)), units::meter_t(y(1, 0)),
@@ -120,17 +123,14 @@ TEST(LTVDiffDriveControllerTest, TrackingTest) {
 
     prevStateRef = stateRef;
 
-    Eigen::Matrix<double, 10, 1> augmentedRef;
-    augmentedRef.block<5, 1>(0, 0) = stateRef;
-
     u = controller.Calculate(currentState.block<5, 1>(0, 0), desiredState) +
-        feedforward.Calculate(augmentedRef);
+        feedforward.Calculate(stateRef);
 
     ScaleCapU(&u);
 
     t += kDt;
 
-    trueXhat = frc::RungeKutta(modelDynamics, trueXhat, u, kDt);
+    x = frc::RungeKutta(modelDynamics, x, u, kDt);
     EXPECT_TRUE(controller.AtReference());
   }
 }
@@ -181,8 +181,8 @@ TEST(LTVDiffDriveControllerTest, TrackingTestNoise) {
   auto t = 0.0_s;
   auto totalTime = trajectory.TotalTime();
 
-  Eigen::Matrix<double, 10, 1> trueXhat;
-  trueXhat.setZero();
+  Eigen::Matrix<double, 5, 1> x;
+  x.setZero();
 
   Eigen::Matrix<double, 2, 1> u;
   u.setZero();
@@ -191,8 +191,11 @@ TEST(LTVDiffDriveControllerTest, TrackingTestNoise) {
   prevStateRef.setZero();
 
   while (t <= totalTime) {
+    Eigen::Matrix<double, 10, 1> xAug;
+    xAug.setZero();
+    xAug.block<5, 1>(0, 0) = x;
     Eigen::Matrix<double, 3, 1> y = estimator.LocalMeasurementModel(
-        trueXhat, Eigen::Matrix<double, 2, 1>::Zero());
+        xAug, Eigen::Matrix<double, 2, 1>::Zero());
 
     y += frc::MakeWhiteNoiseVector(0.0001, 0.005, 0.005);
 
@@ -216,17 +219,14 @@ TEST(LTVDiffDriveControllerTest, TrackingTestNoise) {
 
     prevStateRef = stateRef;
 
-    Eigen::Matrix<double, 10, 1> augmentedRef;
-    augmentedRef.block<5, 1>(0, 0) = stateRef;
-
     u = controller.Calculate(currentState.block<5, 1>(0, 0), desiredState) +
-        feedforward.Calculate(augmentedRef);
+        feedforward.Calculate(stateRef);
 
     ScaleCapU(&u);
 
     t += kDt;
 
-    trueXhat = frc::RungeKutta(controllerDynamics, trueXhat, u, kDt);
+    x = frc::RungeKutta(controllerDynamics, x, u, kDt);
     EXPECT_TRUE(controller.AtReference());
   }
 }
