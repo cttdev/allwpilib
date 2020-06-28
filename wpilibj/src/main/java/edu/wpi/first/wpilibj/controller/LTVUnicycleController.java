@@ -24,11 +24,16 @@ import edu.wpi.first.wpiutil.math.numbers.N3;
  * controller utilizes tolerances grounded in reality to pick gains rather than
  * magical Beta and Zeta gains.
  */
+
+@SuppressWarnings("MemberName")
 public class LTVUnicycleController {
-  @SuppressWarnings("MemberName")
-  private final Matrix<N2, N3> m_K0;
-  @SuppressWarnings("MemberName")
-  private final Matrix<N2, N3> m_K1;
+  private final Matrix<N3, N2> m_B;
+
+  private final Matrix<N3, N1> m_qElms;
+  private final Matrix<N2, N1> m_rElms;
+
+  private final double m_dt;
+
   Pose2d m_poseError;
   Pose2d m_poseTolerance;
 
@@ -70,18 +75,11 @@ public class LTVUnicycleController {
         double rho,
         Matrix<N2, N1> rElms,
         double dtSeconds) {
-
-    var a0 = new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 0, 0, 0, 0, 1e-9, 0, 0, 0);
-    var a1 = new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 0, 0, 0, 0, 1, 0, 0, 0);
-    var b = new MatBuilder<>(Nat.N3(), Nat.N2()).fill(1, 0, 0, 0, 0, 1);
-
-    m_K0 = new LinearQuadraticRegulator<N3, N2, N2>(
-            a0, b, qElms.times(rho), rElms, dtSeconds
-    ).getK();
-
-    m_K1 = new LinearQuadraticRegulator<N3, N2, N2>(
-            a1, b, qElms.times(rho), rElms, dtSeconds
-    ).getK();
+    m_dt = dtSeconds;
+    m_B = new MatBuilder<>(Nat.N3(), Nat.N2()).fill(1, 0, 0, 0, 0, 1);
+    
+    m_qElms = qElms.times(rho);
+    m_rElms = rElms;
   }
 
   /**
@@ -117,36 +115,38 @@ public class LTVUnicycleController {
    * <p>The reference pose, linear velocity, and angular velocity should come
    * from a {@link Trajectory}.
    *
-   * @param currentPose                   The current position of the robot.
-   * @param poseRef                       The desired pose of the robot.
-   * @param linearVelocityRefMetersPerSec The desired linear velocity of the robot.
-   * @param angularVelocityRefRadPerSec   The desired angular velocity of the robot.
+   * @param currentPose                       The current position of the robot.
+   * @param currentLinearVelocityMetersPerSec The current linear velocity of the robot.
+   *                                          this can be determined by averaging the
+   *                                          measured left and right wheel velocities.
+   * @param poseRef                           The desired pose of the robot.
+   * @param linearVelocityRefMetersPerSec     The desired linear velocity of the robot.
+   * @param angularVelocityRefRadPerSec       The desired angular velocity of the robot.
    * @return The next calculated output.
    */
-  public ChassisSpeeds calculate(Pose2d currentPose, Pose2d poseRef,
+  @SuppressWarnings("LocalVariableName")
+  public ChassisSpeeds calculate(Pose2d currentPose,
+                                 double currentLinearVelocityMetersPerSec,
+                                 Pose2d poseRef,
                                  double linearVelocityRefMetersPerSec,
                                  double angularVelocityRefRadPerSec) {
-
     m_poseError = poseRef.relativeTo(currentPose);
 
-    var kx = m_K0.get(0, 0);
-    var ky0 = m_K0.get(1, 1);
-    var ky1 = m_K1.get(1, 1);
-    var ktheta1 = m_K1.get(1, 2);
+    if (currentLinearVelocityMetersPerSec < 1e-9) {
+      currentLinearVelocityMetersPerSec = 1e-9;
+    }
 
-    var sqrtAbsV = Math.sqrt(Math.abs(linearVelocityRefMetersPerSec));
-    var gain = new MatBuilder<>(Nat.N2(), Nat.N3())
-            .fill(kx, 0, 0, 0,
-                    (ky0 + (ky1 - ky0) * sqrtAbsV) * Math.signum(linearVelocityRefMetersPerSec),
-                    ktheta1 * sqrtAbsV);
+    var A = new MatBuilder<>(Nat.N3(), Nat.N3())
+            .fill(0, 0, 0, 0, 0, currentLinearVelocityMetersPerSec, 0, 0, 0);
+    
+    var K = new LinearQuadraticRegulator<N3, N2, N2>(A, m_B, m_qElms, m_rElms, m_dt).getK();
 
     var error = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(
-            m_poseError.getTranslation().getX(),
-            m_poseError.getTranslation().getY(),
-            m_poseError.getRotation().getRadians());
+          m_poseError.getTranslation().getX(),
+          m_poseError.getTranslation().getY(),
+          m_poseError.getRotation().getRadians());
 
-    @SuppressWarnings("LocalVariableName")
-    var u = gain.times(error);
+    var u = K.times(error);
 
     return new ChassisSpeeds(
             linearVelocityRefMetersPerSec + u.get(0, 0),
@@ -165,8 +165,11 @@ public class LTVUnicycleController {
    *
    * @return The calculated {@link ChassisSpeeds}.
    */
-  public ChassisSpeeds calculate(Pose2d currentPose, Trajectory.State desiredState) {
-    return calculate(currentPose, desiredState.poseMeters,
+  public ChassisSpeeds calculate(Pose2d currentPose,
+      double currentLinearVelocityMetersPerSec,
+      Trajectory.State desiredState) {
+    return calculate(currentPose, currentLinearVelocityMetersPerSec,
+            desiredState.poseMeters,
             desiredState.velocityMetersPerSecond,
             desiredState.velocityMetersPerSecond * desiredState.curvatureRadPerMeter);
   }
