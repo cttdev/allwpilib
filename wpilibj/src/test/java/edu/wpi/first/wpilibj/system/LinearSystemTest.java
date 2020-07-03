@@ -23,7 +23,7 @@ class LinearSystemTest {
     var model = LinearSystemId.createDrivetrainVelocitySystem(
             DCMotor.getNEO(4), 70, 0.05, 0.4, 6.0, 6
     );
-    assertEquals(model.getA().getStorage().getDDRM(), new MatBuilder<>(Nat.N2(),
+    assertEquals(model.getA(), new MatBuilder<>(Nat.N2(),
             Nat.N2()).fill(-10.14132, 3.06598, 3.06598, -10.14132).getStorage().getDDRM(), 0.001);
 
     assertEquals(model.getB().getStorage().getDDRM(), new MatBuilder<>(Nat.N2(),

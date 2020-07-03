@@ -27,11 +27,19 @@ import edu.wpi.first.wpiutil.math.numbers.N1;
  */
 @SuppressWarnings("PMD.TooManyMethods")
 public class Matrix<R extends Num, C extends Num> {
+  final SimpleMatrix m_storage;
 
-  private final SimpleMatrix m_storage;
-
-  public Matrix() {
-    this.m_storage = new SimpleMatrix(R.getNum(), C.getNum());
+  /**
+   * Constructs an empty zero matrix of the given dimensions.
+   *
+   * @param rows    The number of rows of the matrix.
+   * @param columns The number of columns of the matrix.
+   */
+  public Matrix(Nat<R> rows, Nat<C> columns) {
+    this.m_storage = new SimpleMatrix(
+      Objects.requireNonNull(rows).getNum(),
+      Objects.requireNonNull(columns).getNum()
+    );
   }
 
   /**
@@ -40,8 +48,17 @@ public class Matrix<R extends Num, C extends Num> {
    *
    * @param storage The {@link SimpleMatrix} to back this value
    */
-  public Matrix(Matrix other) {
-    this.m_storage = other.m_storage;
+  Matrix(SimpleMatrix storage) {
+    this.m_storage = Objects.requireNonNull(storage);
+  }
+
+  /**
+   * Constructs a new matrix with the storage of the supplied matrix.
+   *
+   * @param other The {@link Matrix} to copy the storage of
+   */
+  public Matrix(Matrix<R, C> other) {
+    this.m_storage = Objects.requireNonNull(other).m_storage;
   }
 
   /**
@@ -91,7 +108,8 @@ public class Matrix<R extends Num, C extends Num> {
    * @param val The row vector to set the given row to.
    */
   public final void setRow(int row, Matrix<N1, C> val) {
-    this.m_storage.setRow(row, 0, val.getStorage().getDDRM().getData());
+    this.m_storage.setRow(row, 0,
+        Objects.requireNonNull(val).m_storage.getDDRM().getData());
   }
 
   /**
@@ -101,7 +119,8 @@ public class Matrix<R extends Num, C extends Num> {
    * @param val    The column vector to set the given row to.
    */
   public final void setColumn(int column, Matrix<R, N1> val) {
-    this.m_storage.setColumn(column, 0, val.getStorage().getDDRM().getData());
+    this.m_storage.setColumn(column, 0,
+        Objects.requireNonNull(val).m_storage.getDDRM().getData());
   }
 
 
@@ -163,7 +182,7 @@ public class Matrix<R extends Num, C extends Num> {
    * @return The result of the matrix multiplication between this and the given matrix.
    */
   public final <C2 extends Num> Matrix<R, C2> times(Matrix<C, C2> other) {
-    return new Matrix<>(this.m_storage.mult(other.m_storage));
+    return new Matrix<>(this.m_storage.mult(Objects.requireNonNull(other).m_storage));
   }
 
   /**
@@ -228,7 +247,7 @@ public class Matrix<R extends Num, C extends Num> {
    * @return The resultant matrix.
    */
   public final Matrix<R, C> plus(Matrix<R, C> value) {
-    return new Matrix<>(this.m_storage.plus(value.m_storage));
+    return new Matrix<>(this.m_storage.plus(Objects.requireNonNull(value).m_storage));
   }
 
   /**
@@ -254,7 +273,7 @@ public class Matrix<R extends Num, C extends Num> {
   /**
    * Calculates the transpose, M^T of this matrix.
    *
-   * @return The tranpose matrix.
+   * @return The transpose matrix.
    */
   public final Matrix<C, R> transpose() {
     return new Matrix<>(this.m_storage.transpose());
@@ -289,7 +308,7 @@ public class Matrix<R extends Num, C extends Num> {
    * @return The solution to the linear system.
    */
   public final Matrix<R, N1> solve(Matrix<R, N1> b) {
-    return new Matrix<>(this.m_storage.solve(b.m_storage));
+    return new Matrix<>(this.m_storage.solve(Objects.requireNonNull(b).m_storage));
   }
 
   /**
@@ -305,8 +324,8 @@ public class Matrix<R extends Num, C extends Num> {
             + "This matrix is " + this.getNumRows() + " x " + this.getNumCols());
     }
     Matrix<R, C> toReturn = new Matrix<>(new SimpleMatrix(this.getNumRows(), this.getNumCols()));
-    WPIUtilJNI.exp(this.getStorage().getDDRM().getData(), this.getNumRows(),
-          toReturn.getStorage().getDDRM().getData());
+    WPIUtilJNI.exp(this.m_storage.getDDRM().getData(), this.getNumRows(),
+          toReturn.m_storage.getDDRM().getData());
     return toReturn;
   }
 
@@ -411,15 +430,15 @@ public class Matrix<R extends Num, C extends Num> {
    * @param width  The number of columns of the extracted matrix.
    * @param startingRow The starting row of the extracted matrix.
    * @param startingCol The starting column of the extracted matrix.
-   * @return A column vector from the given column.
+   * @return The extracted matrix.
    */
   public final <R2 extends Num, C2 extends Num> Matrix<R2, C2> block(
       Nat<R2> height, Nat<C2> width, int startingRow, int startingCol) {
     return new Matrix<>(this.m_storage.extractMatrix(
       startingRow,
-      height.getNum() + startingRow,
+      Objects.requireNonNull(height).getNum() + startingRow,
       startingCol,
-      width.getNum() + startingCol));
+      Objects.requireNonNull(width).getNum() + startingCol));
   }
 
   /**
@@ -427,31 +446,15 @@ public class Matrix<R extends Num, C extends Num> {
    *
    * @param height The number of rows of the extracted matrix.
    * @param width  The number of columns of the extracted matrix.
-   * @param startingRow The starting row of the extracted matrix.
-   * @param startingCol The starting column of the extracted matrix.
+   * @param other  The matrix to assign the block to.
    */
-  public void assignBlock(int startingRow, int startingCol, Matrix other) {
-    this.m_storage.insertIntoThis(startingRow, startingCol, other.m_storage);
+  public <R2 extends Num, C2 extends Num> void assignBlock(int startingRow, int startingCol, Matrix<R2, C2> other) {
+    this.m_storage.insertIntoThis(startingRow, startingCol, Objects.requireNonNull(other).m_storage);
   }
 
   @Override
   public String toString() {
     return m_storage.toString();
-  }
-
-  /**
-   * Creates a new matrix of zeros.
-   *
-   * @param rows The number of rows in the matrix.
-   * @param cols The number of columns in the matrix.
-   * @param <R> The number of rows in the matrix as a generic.
-   * @param <C> The number of columns in the matrix as a generic.
-   * @return An RxC matrix filled with zeros.
-   */
-  @SuppressWarnings("LineLength")
-  public static <R extends Num, C extends Num> Matrix<R, C> zeros(Nat<R> rows, Nat<C> cols) {
-    return new Matrix<>(
-        new SimpleMatrix(Objects.requireNonNull(rows).getNum(), Objects.requireNonNull(cols).getNum()));
   }
 
   /**
@@ -498,18 +501,6 @@ public class Matrix<R extends Num, C extends Num> {
    * @return A builder to construct the matrix.
    */
   public static <R extends Num, C extends Num> MatBuilder<R, C> mat(Nat<R> rows, Nat<C> cols) {
-    return new MatBuilder<>(rows, cols);
-  }
-
-  /**
-   * Entrypoint to the VecBuilder class for creation
-   * of custom vectors with the given size and contents.
-   *
-   * @param dim The dimension of the vector.
-   * @param <D> The dimension of the vector as a generic.
-   * @return A builder to construct the vector.
-   */
-  public static <D extends Num> VecBuilder<D> vec(Nat<D> dim) {
-    return new VecBuilder<>(dim);
+    return new MatBuilder<>(Objects.requireNonNull(rows), Objects.requireNonNull(cols));
   }
 }
