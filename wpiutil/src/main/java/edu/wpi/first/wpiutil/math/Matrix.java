@@ -11,6 +11,7 @@ import java.util.Objects;
 
 import org.ejml.MatrixDimensionException;
 import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.MatrixFeatures_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
@@ -502,5 +503,54 @@ public class Matrix<R extends Num, C extends Num> {
    */
   public static <R extends Num, C extends Num> MatBuilder<R, C> mat(Nat<R> rows, Nat<C> cols) {
     return new MatBuilder<>(Objects.requireNonNull(rows), Objects.requireNonNull(cols));
+  }
+
+  
+  /** 
+   * Checks if another Matrix is identical to this one within a specified tolerance.
+   *
+   * <p>This will check if each element is in tolerance of the corresponding element
+   * from the other Matrix or if the elements have the same symbolic meaning. For two
+   * elements to have the same symbolic meaning they both must be either Double.NaN,
+   * Double.POSITIVE_INFINITY, or Double.NEGATIVE_INFINITY.
+   * 
+   * <p>NOTE:It is recommend to use {@link Matrix#equals(Matrix, double)} over this
+   * when checking if two matrices are equal as {@link Matrix#equals(Matrix, double)}
+   * will return false if an element is uncountable. This should only be used when
+   * uncountable elements need to compared.
+   * 
+   * @param other     The Matrix to check against this one.
+   * @param tolerance The tolerance to check equality with.
+   * @return true if this Matrix is identical to the one supplied.
+   */
+  public boolean isIdentical(Matrix<?, ?> other, double tolerance) {
+    return MatrixFeatures_DDRM.isIdentical(this.m_storage.getDDRM(),
+        other.m_storage.getDDRM(), tolerance);
+  }
+
+  /** 
+   * Checks if another Matrix is equal to this one within a specified tolerance.
+   * 
+   * <p>This will check if each element is in tolerance of the corresponding element
+   * from the other Matrix.
+   * 
+   * @param other     The Matrix to check against this one.
+   * @param tolerance The tolerance to check equality with.
+   * @return true if this Matrix is equal to the one supplied.
+   */
+  public boolean equals(Matrix<?, ?> other, double tolerance) {
+    return MatrixFeatures_DDRM.isEquals(this.m_storage.getDDRM(),
+        other.m_storage.getDDRM(), tolerance);
+  }
+
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Matrix<?, ?> matrix = (Matrix<?, ?>) o;
+    if (MatrixFeatures_DDRM.hasUncountable(matrix.m_storage.getDDRM())) return false;
+    return MatrixFeatures_DDRM.isEquals(this.m_storage.getDDRM(), matrix.m_storage.getDDRM());
   }
 }
