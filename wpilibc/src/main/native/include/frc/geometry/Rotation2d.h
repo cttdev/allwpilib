@@ -180,6 +180,8 @@ class Rotation2d {
    */
   double Tan() const { return m_sin / m_cos; }
 
+  const Rotation2d interpolate(const Rotation2d& end, const double t) const;
+
  private:
   units::radian_t m_value = 0_rad;
   double m_cos = 1;

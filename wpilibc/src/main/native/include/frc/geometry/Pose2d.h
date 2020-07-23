@@ -10,6 +10,7 @@
 #include "Transform2d.h"
 #include "Translation2d.h"
 #include "Twist2d.h"
+#include <units/time.h>
 
 namespace wpi {
 class json;
@@ -180,6 +181,8 @@ class Pose2d {
    * @return The twist that maps this to end.
    */
   Twist2d Log(const Pose2d& end) const;
+
+  const Pose2d interpolate(const Pose2d& end, const double t) const;
 
  private:
   Translation2d m_translation;

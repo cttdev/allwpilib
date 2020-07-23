@@ -99,6 +99,18 @@ Twist2d Pose2d::Log(const Pose2d& end) const {
   return {translationPart.X(), translationPart.Y(), units::radian_t(dtheta)};
 }
 
+const Pose2d Pose2d::interpolate(const Pose2d& end, const double t) const {
+  if (t < 0) {
+    return Pose2d(*this);
+  } else if (t >= 1) {
+    return end;
+  } else {
+    auto& twist = this->Log(end);
+    Twist2d scaledTwist{twist.dx * t, twist.dy * t, twist.dtheta * t};
+    return this->Exp(scaledTwist);
+  }
+}
+
 void frc::to_json(wpi::json& json, const Pose2d& pose) {
   json = wpi::json{{"translation", pose.Translation()},
                    {"rotation", pose.Rotation()}};

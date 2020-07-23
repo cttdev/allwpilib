@@ -6,6 +6,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "frc/geometry/Rotation2d.h"
+#include "frc/util/interpolatable/TimeInterpolatableBuffer.h"
 
 #include <cmath>
 
@@ -75,6 +76,10 @@ bool Rotation2d::operator!=(const Rotation2d& other) const {
 Rotation2d Rotation2d::RotateBy(const Rotation2d& other) const {
   return {Cos() * other.Cos() - Sin() * other.Sin(),
           Cos() * other.Sin() + Sin() * other.Cos()};
+}
+
+const Rotation2d Rotation2d::interpolate(const Rotation2d& end, const double t) const {
+  return Rotation2d{Interpolate<units::radian_t>(Radians(), end.Radians(), t)};
 }
 
 void frc::to_json(wpi::json& json, const Rotation2d& rotation) {

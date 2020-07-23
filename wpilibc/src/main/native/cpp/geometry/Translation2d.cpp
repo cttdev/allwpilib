@@ -6,6 +6,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "frc/geometry/Translation2d.h"
+#include "frc/util/interpolatable/TimeInterpolatableBuffer.h"
 
 #include <units/math.h>
 #include <wpi/json.h>
@@ -75,6 +76,10 @@ bool Translation2d::operator!=(const Translation2d& other) const {
 Translation2d& Translation2d::operator/=(double scalar) {
   *this *= (1.0 / scalar);
   return *this;
+}
+
+const Translation2d Translation2d::interpolate(const Translation2d& end, const double t) const {
+  return Translation2d{Interpolate<units::meter_t>(this->X(), end.X(), t), Interpolate<units::meter_t>(this->Y(), end.Y(), t)};
 }
 
 void frc::to_json(wpi::json& json, const Translation2d& translation) {

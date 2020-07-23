@@ -92,6 +92,8 @@ class Translation2d {
    */
   Translation2d RotateBy(const Rotation2d& other) const;
 
+  const Translation2d Interpolate(const Translation2d& end, const double t) const;
+
   /**
    * Adds two translations in 2d space and returns the sum. This is similar to
    * vector addition.
@@ -210,7 +212,7 @@ class Translation2d {
    * @return The reference to the new mutated object.
    */
   Translation2d& operator/=(double scalar);
-
+  
  private:
   units::meter_t m_x = 0_m;
   units::meter_t m_y = 0_m;
