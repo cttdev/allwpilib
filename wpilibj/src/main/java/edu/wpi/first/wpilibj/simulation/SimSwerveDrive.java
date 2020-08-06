@@ -24,6 +24,7 @@ import org.ejml.MatrixDimensionException;
 
 import java.util.Arrays;
 
+@SuppressWarnings("PMD")
 public class SimSwerveDrive {
   private final SwerveDriveKinematics m_kinematics;
   private final double m_chassisMassKg;

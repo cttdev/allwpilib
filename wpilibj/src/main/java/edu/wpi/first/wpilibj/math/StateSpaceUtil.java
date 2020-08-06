@@ -9,7 +9,6 @@ package edu.wpi.first.wpilibj.math;
 
 import java.util.Random;
 
-import edu.wpi.first.wpiutil.math.numbers.N4;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
@@ -22,6 +21,7 @@ import edu.wpi.first.wpiutil.math.Num;
 import edu.wpi.first.wpiutil.math.VecBuilder;
 import edu.wpi.first.wpiutil.math.numbers.N1;
 import edu.wpi.first.wpiutil.math.numbers.N3;
+import edu.wpi.first.wpiutil.math.numbers.N4;
 
 @SuppressWarnings({"PMD.TooManyMethods", "ParameterName"})
 public final class StateSpaceUtil {
@@ -133,7 +133,8 @@ public final class StateSpaceUtil {
   }
 
   /**
-   * Convert a {@link Pose2d} to a vector of [x, y, cos(theta), sin(theta)], where theta is in radians.
+   * Convert a {@link Pose2d} to a vector of 
+   * [x, y, cos(theta), sin(theta)], where theta is in radians.
    *
    * @param pose A pose to convert to a vector.
    */

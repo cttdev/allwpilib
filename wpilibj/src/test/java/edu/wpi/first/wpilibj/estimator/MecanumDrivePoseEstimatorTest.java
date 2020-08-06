@@ -25,6 +25,7 @@ import edu.wpi.first.wpiutil.math.VecBuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressWarnings("PMD")
 public class MecanumDrivePoseEstimatorTest {
   @Test
   @SuppressWarnings({"LocalVariableName", "PMD.AvoidInstantiatingObjectsInLoops"})

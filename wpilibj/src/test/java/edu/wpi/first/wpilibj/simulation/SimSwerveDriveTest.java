@@ -10,7 +10,6 @@ package edu.wpi.first.wpilibj.simulation;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.simulation.SimSwerveDrive;
 import edu.wpi.first.wpilibj.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.util.Units;
@@ -25,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressWarnings({"checkstyle:all", "PMD"})
 public class SimSwerveDriveTest {
   private SimSwerveDrive m_sim = new SimSwerveDrive(50, 2.0,
 //      new SimSwerveDrive.SimSwerveModule(DCMotor.getNEO(1), 8.0,
