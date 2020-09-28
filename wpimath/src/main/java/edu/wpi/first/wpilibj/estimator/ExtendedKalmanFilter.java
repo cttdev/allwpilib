@@ -204,7 +204,7 @@ public class ExtendedKalmanFilter<States extends Num, Inputs extends Num, Output
    * Project the model into the future with a new control input u.
    *
    * @param u         New control input from controller.
-   * @param f         The function used to linearlize the model.
+   * @param f         The function used to linearize the model.
    * @param dtSeconds Timestep for prediction.
    */
   @SuppressWarnings("ParameterName")
@@ -213,11 +213,32 @@ public class ExtendedKalmanFilter<States extends Num, Inputs extends Num, Output
         Matrix<Inputs, N1>, Matrix<States, N1>> f,
       double dtSeconds
   ) {
+    predict(u, f, m_contQ, dtSeconds);
+  }
+
+  /**
+   * Project the model into the future with a new control input u.
+   * 
+   * <p>This is useful for when the process noise covariance matrix is time variant. 
+   * The the Q matrix provided in the constructor is used if it is not provided
+   * (the two-argument version of this function).
+   *
+   * @param u         New control input from controller.
+   * @param f         The function used to linearize the model.
+   * @param q         The continuous process noise covariance matrix.
+   * @param dtSeconds Timestep for prediction.
+   */
+  @SuppressWarnings("ParameterName")
+  public void predict(
+      Matrix<Inputs, N1> u, BiFunction<Matrix<States, N1>,
+      Matrix<Inputs, N1>, Matrix<States, N1>> f,
+      Matrix<States, States> q,
+      double dtSeconds) {
     // Find continuous A
     final var contA = NumericalJacobian.numericalJacobianX(m_states, m_states, f, m_xHat, u);
 
     // Find discrete A and Q
-    final var discPair = Discretization.discretizeAQTaylor(contA, m_contQ, dtSeconds);
+    final var discPair = Discretization.discretizeAQTaylor(contA, q, dtSeconds);
     final var discA = discPair.getFirst();
     final var discQ = discPair.getSecond();
 
