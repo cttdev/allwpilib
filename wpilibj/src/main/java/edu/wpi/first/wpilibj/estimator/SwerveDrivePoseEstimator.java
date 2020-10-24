@@ -8,6 +8,7 @@
 package edu.wpi.first.wpilibj.estimator;
 
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
@@ -26,7 +27,7 @@ import edu.wpi.first.wpiutil.math.numbers.N3;
 import edu.wpi.first.wpiutil.math.numbers.N4;
 
 /**
- * This class wraps an {@link UnscentedKalmanFilter ExtendedKalmanFilter} to fuse
+ * This class wraps an {@link UnscentedKalmanFilter UnscentedKalmanFilter} to fuse
  * latency-compensated vision measurements with swerve drive encoder velocity measurements.
  * It will correct for noisy measurements and encoder drift. It is intended to be an easy
  * but more accurate drop-in for {@link edu.wpi.first.wpilibj.kinematics.SwerveDriveOdometry}.
@@ -61,6 +62,10 @@ public class SwerveDrivePoseEstimator {
 
   private Rotation2d m_gyroOffset;
   private Rotation2d m_previousAngle;
+
+  Matrix<N3, N1> m_stateStdDevs;
+  Matrix<N1, N1> m_localMeasurementStdDevs;
+  Matrix<N3, N1> m_visionMeasurementStdDevs;
 
   /**
    * Constructs a SwerveDrivePoseEstimator.
@@ -113,27 +118,24 @@ public class SwerveDrivePoseEstimator {
         Nat.N4(), Nat.N2(),
         this::f,
         (x, u) -> x.block(Nat.N2(), Nat.N1(), 2, 0),
-        VecBuilder.fill(stateStdDevs.get(0, 0), stateStdDevs.get(1, 0),
-            Math.cos(stateStdDevs.get(2, 0)), Math.sin(stateStdDevs.get(2, 0))),
-        VecBuilder.fill(Math.cos(localMeasurementStdDevs.get(0, 0)),
-                Math.sin(localMeasurementStdDevs.get(0, 0))),
+        makeQDiagonals(stateStdDevs, VecBuilder.fill(0.0, 0.0,
+            initialPoseMeters.getRotation().getCos(), initialPoseMeters.getRotation().getSin())),
+        makeRDiagonals(localMeasurementStdDevs, VecBuilder.fill(0.0, 0.0,
+            initialPoseMeters.getRotation().getCos(), initialPoseMeters.getRotation().getSin())),
         m_nominalDt
     );
     m_kinematics = kinematics;
     m_latencyCompensator = new KalmanFilterLatencyCompensator<>();
+    m_stateStdDevs = stateStdDevs;
+    m_localMeasurementStdDevs = localMeasurementStdDevs;
+    m_visionMeasurementStdDevs = visionMeasurementStdDevs;
 
-    var fullVisionMeasurementStdDev = VecBuilder.fill(
-            visionMeasurementStdDevs.get(0, 0), visionMeasurementStdDevs.get(1, 0),
-            Math.cos(visionMeasurementStdDevs.get(2, 0)),
-            Math.sin(visionMeasurementStdDevs.get(2, 0)));
-
-    var visionContR = StateSpaceUtil.makeCovarianceMatrix(Nat.N4(), fullVisionMeasurementStdDev);
-    var visionDiscR = Discretization.discretizeR(visionContR, m_nominalDt);
-
+    // Create correction mechanism for vision measurements.
     m_visionCorrect = (u, y) -> m_observer.correct(
         Nat.N4(), u, y,
         (x, u_) -> x,
-        visionDiscR
+        Discretization.discretizeR(StateSpaceUtil.makeCovarianceMatrix(Nat.N4(),
+            makeVisionRDiagonals(visionMeasurementStdDevs, y)), nominalDtSeconds)
     );
 
     m_gyroOffset = initialPoseMeters.getRotation().minus(gyroAngle);
@@ -141,8 +143,19 @@ public class SwerveDrivePoseEstimator {
     m_observer.setXhat(StateSpaceUtil.poseTo4dVector(initialPoseMeters));
   }
 
+  /**
+   * Get x-dot given the current state and input. Recall that the state is [x, y, cos(theta),
+   * sin(theta)]^T.
+   * In our case, x-dot will be [dx/dt, dy/dt, d/dt cos(theta), d/dt sin(theta)].
+   * 
+   * @param x The current state.
+   * @param u The current input. In our case, u = [vx, vy, d/dt theta]^T
+   */
   @SuppressWarnings({"ParameterName", "MethodName"})
   private Matrix<N4, N1> f(Matrix<N4, N1> x, Matrix<N3, N1> u) {
+    // Need to return [dx/dt, dy/dt, d/dt cos(theta), d/dt sin(theta)]
+    // dx/dt and dy/dt are from u.
+    // d/dt cos(theta) = -sin(theta) * d/dt(theta) by the chain rule. 
     return VecBuilder.fill(
             u.get(0, 0), u.get(1, 0), -x.get(3, 0) * u.get(2, 0), x.get(2, 0) * u.get(2, 0)
     );
@@ -166,7 +179,7 @@ public class SwerveDrivePoseEstimator {
   }
 
   /**
-   * Gets the pose of the robot at the current time as estimated by the Extended Kalman Filter.
+   * Gets the pose of the robot at the current time as estimated by the Unscented Kalman Filter.
    *
    * @return The estimated robot pose in meters.
    */
@@ -179,7 +192,7 @@ public class SwerveDrivePoseEstimator {
   }
 
   /**
-   * Add a vision measurement to the Extended Kalman Filter. This will correct the
+   * Add a vision measurement to the Unscented Kalman Filter. This will correct the
    * odometry pose estimate while still accounting for measurement noise.
    *
    * <p>This method can be called as infrequently as you want, as long as you are
@@ -199,8 +212,7 @@ public class SwerveDrivePoseEstimator {
    */
   public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
     m_latencyCompensator.applyPastGlobalMeasurement(
-            Nat.N4(),
-            m_observer, m_nominalDt,
+        m_observer, m_nominalDt,
             StateSpaceUtil.poseTo4dVector(visionRobotPoseMeters),
             m_visionCorrect,
             timestampSeconds
@@ -208,7 +220,7 @@ public class SwerveDrivePoseEstimator {
   }
 
   /**
-   * Updates the the Extended Kalman Filter using only wheel encoder information.
+   * Updates the the Unscented Kalman Filter using only wheel encoder information.
    * This should be called every loop, and the correct loop period must be passed
    * into the constructor of this class.
    *
@@ -224,7 +236,7 @@ public class SwerveDrivePoseEstimator {
   }
 
   /**
-   * Updates the the Extended Kalman Filter using only wheel encoder information.
+   * Updates the the Unscented Kalman Filter using only wheel encoder information.
    * This should be called every loop, and the correct loop period must be passed
    * into the constructor of this class.
    *
@@ -257,10 +269,32 @@ public class SwerveDrivePoseEstimator {
     m_previousAngle = angle;
 
     var localY = VecBuilder.fill(angle.getCos(), angle.getSin());
-    m_latencyCompensator.addObserverState(m_observer, u, localY, currentTimeSeconds);
-    m_observer.predict(u, dt);
-    m_observer.correct(u, localY);
-
+    var q = StateSpaceUtil.makeCovarianceMatrix(Nat.N4(),
+        makeQDiagonals(m_stateStdDevs, m_observer.getXhat()));
+    var r = StateSpaceUtil.makeCovarianceMatrix(Nat.N2(),
+        makeRDiagonals(m_localMeasurementStdDevs, m_observer.getXhat()));
+    BiFunction<Matrix<N4, N1>, Matrix<N3, N1>, Matrix<N2, N1>> model =
+        (x, u_) -> x.block(Nat.N2(), Nat.N1(), 2, 0);
+    m_latencyCompensator.addObserverState(null, m_observer, u, localY, q, r, model, currentTimeSeconds);
+    m_observer.predict(u, q, dt);
+    m_observer.correct(Nat.N2(), u, localY, model, r);
     return getEstimatedPosition();
+  }
+
+  @SuppressWarnings("ParameterName")
+  private static Matrix<N4, N1> makeQDiagonals(Matrix<N3, N1> stdDevs, Matrix<N4, N1> x) {
+    return VecBuilder.fill(stdDevs.get(0, 0), stdDevs.get(1, 0),
+        stdDevs.get(2, 0) * x.get(2, 0), stdDevs.get(2, 0) * x.get(3, 0));
+  }
+
+  @SuppressWarnings("ParameterName")
+  private static Matrix<N2, N1> makeRDiagonals(Matrix<N1, N1> stdDevs, Matrix<N4, N1> x) {
+    return VecBuilder.fill(stdDevs.get(0, 0) * x.get(2, 0), stdDevs.get(0, 0) * x.get(3, 0));
+  }
+
+  @SuppressWarnings("ParameterName")
+  private static Matrix<N4, N1> makeVisionRDiagonals(Matrix<N3, N1> stdDevs, Matrix<N4, N1> y) {
+    return VecBuilder.fill(stdDevs.get(0, 0), stdDevs.get(1, 0),
+        stdDevs.get(2, 0) * y.get(2, 0), stdDevs.get(2, 0) * y.get(3, 0));
   }
 }

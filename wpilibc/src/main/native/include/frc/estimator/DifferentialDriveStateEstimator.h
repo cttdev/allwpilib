@@ -21,9 +21,6 @@
 
 namespace frc {
 
-template <int N>
-using Vector = Eigen::Matrix<double, N, 1>;
-
 /**
  * This class wraps an ExtendedKalmanFilter to fuse latency-compensated
  * global measurements(ex. vision) with differential drive encoder measurements.
@@ -40,19 +37,19 @@ using Vector = Eigen::Matrix<double, N, 1>;
  * DifferentialDriveStateEstimator::Update should be called every
  * robot loop (if your robot loops are faster than the default then you should
  * use DifferentialDriveStateEstimator::DifferentialDriveStateEstimator(const
- * LinearSystem<2, 2, 2>&, const Eigen::Matrix<double, 10, 1>&, const Eigen::Matrix<double, 10, 1>&, const
- * Vector<3>&, const Eigen::Matrix<double, 3, 1>&, const DifferentialDriveKinematics&,
- * units::second_t)
- * to change the nominal delta time.)
+ * LinearSystem<2, 2, 2>&, const Eigen::Matrix<double, 10, 1>&, const
+ * Eigen::Matrix<double, 10, 1>&, const Eigen::Matrix<double, 3, 1>&, const
+ * Eigen::Matrix<double, 3, 1>&, const DifferentialDriveKinematics&,
+ * units::second_t) to change the nominal delta time.)
  *
  * DifferentialDriveStateEstimator::ApplyPastGlobalMeasurement can be
  * called as infrequently as you want.
  *
  * Our state-space system is:
  *
- * <strong> x = [[x, y, theta, vel_l, vel_r, dist_l, dist_r, voltError_l,
- * voltError_r, angularVelError]]^T </strong> in the field coordinate system
- * (dist_* are wheel distances.)
+ * <strong> x = [[x, y, std::cos(theta), std::sin(theta), vel_l, vel_r, dist_l,
+ * dist_r, voltError_l, voltError_r, angularVelError]]^T </strong> in the field
+ * coordinate system (dist_* are wheel distances.)
  *
  * <strong> u = [[voltage_l, voltage_r]]^T </strong> This is typically the
  * control input of the last timestep from a LTVDiffDriveController.
@@ -80,13 +77,14 @@ class DifferentialDriveStateEstimator {
    * @param nominalDtSeconds         The time in seconds between each robot
    * loop.
    */
-  DifferentialDriveStateEstimator(const LinearSystem<2, 2, 2>& plant,
-                                  const Eigen::Matrix<double, 10, 1>& initialState,
-                                  const Eigen::Matrix<double, 10, 1>& stateStdDevs,
-                                  const Eigen::Matrix<double, 3, 1>& localMeasurementStdDevs,
-                                  const Eigen::Matrix<double, 3, 1>& globalMeasurementStdDevs,
-                                  const DifferentialDriveKinematics& kinematics,
-                                  units::second_t nominalDt = 0.02_s);
+  DifferentialDriveStateEstimator(
+      const LinearSystem<2, 2, 2>& plant,
+      const std::array<double, 10>& initialState,
+      const std::array<double, 10>& stateStdDevs,
+      const std::array<double, 3>& localMeasurementStdDevs,
+      const std::array<double, 3>& globalMeasurementStdDevs,
+      const DifferentialDriveKinematics& kinematics,
+      units::second_t nominalDt = 0.02_s);
 
   /**
    * Applies a global measurement with a given timestamp.
@@ -108,10 +106,11 @@ class DifferentialDriveStateEstimator {
    *
    * @return The robot state estimate.
    */
-  Vector<10> GetEstimatedState() const;
+  Eigen::Matrix<double, 10, 1> GetEstimatedState() const;
 
   /**
-   * Gets the state of the robot at the current time as estimated by the Extended Kalman Filter.
+   * Gets the state of the robot at the current time as estimated by the
+   * Extended Kalman Filter.
    *
    * @return The robot state estimate.
    */
@@ -131,9 +130,10 @@ class DifferentialDriveStateEstimator {
    * @param controlInput  The control input.
    * @return The robot state estimate.
    */
-  Vector<10> Update(units::radian_t heading, units::meter_t leftPosition,
-                    units::meter_t rightPosition,
-                    const Eigen::Matrix<double, 2, 1>& controlInput);
+  Eigen::Matrix<double, 10, 1> Update(
+      units::radian_t heading, units::meter_t leftPosition,
+      units::meter_t rightPosition,
+      const Eigen::Matrix<double, 2, 1>& controlInput);
 
   /**
    * Updates the the Extended Kalman Filter using wheel encoder information,
@@ -150,11 +150,11 @@ class DifferentialDriveStateEstimator {
    * @param currentTimeSeconds Time at which this method was called, in seconds.
    * @return The robot state estimate.
    */
-  Vector<10> UpdateWithTime(units::radian_t heading,
-                            units::meter_t leftPosition,
-                            units::meter_t rightPosition,
-                            const Eigen::Matrix<double, 2, 1>& controlInput,
-                            units::second_t currentTime);
+  Eigen::Matrix<double, 10, 1> UpdateWithTime(
+      units::radian_t heading, units::meter_t leftPosition,
+      units::meter_t rightPosition,
+      const Eigen::Matrix<double, 2, 1>& controlInput,
+      units::second_t currentTime);
 
   /**
    * Resets any internal state with a given initial state.
@@ -168,13 +168,16 @@ class DifferentialDriveStateEstimator {
    */
   void Reset();
 
-  Vector<10> Dynamics(const Eigen::Matrix<double, 10, 1>& x, const Eigen::Matrix<double, 2, 1>& u);
+  Eigen::Matrix<double, 10, 1> Dynamics(const Eigen::Matrix<double, 10, 1>& x,
+                                        const Eigen::Matrix<double, 2, 1>& u);
 
-  static Vector<3> LocalMeasurementModel(const Eigen::Matrix<double, 10, 1>& x,
-                                         const Eigen::Matrix<double, 2, 1>& u);
+  static Eigen::Matrix<double, 3, 1> LocalMeasurementModel(
+      const Eigen::Matrix<double, 10, 1>& x,
+      const Eigen::Matrix<double, 2, 1>& u);
 
-  static Vector<3> GlobalMeasurementModel(const Eigen::Matrix<double, 10, 1>& x,
-                                          const Eigen::Matrix<double, 2, 1>& u);
+  static Eigen::Matrix<double, 3, 1> GlobalMeasurementModel(
+      const Eigen::Matrix<double, 10, 1>& x,
+      const Eigen::Matrix<double, 2, 1>& u);
 
  private:
   LinearSystem<2, 2, 2> m_plant;
@@ -187,16 +190,18 @@ class DifferentialDriveStateEstimator {
   KalmanFilterLatencyCompensator<10, 2, 3, ExtendedKalmanFilter<10, 2, 3>>
       m_latencyCompensator;
 
-  std::function<void(const Eigen::Matrix<double, 2, 1>& u, const Eigen::Matrix<double, 3, 1>& y)> m_globalCorrect;
+  std::function<void(const Eigen::Matrix<double, 2, 1>& u,
+                     const Eigen::Matrix<double, 3, 1>& y)>
+      m_globalCorrect;
 
   units::second_t m_prevTime = -1_s;
 
-  Vector<3> m_localY;
-  Vector<3> m_globalY;
+  Eigen::Matrix<double, 3, 1> m_localY;
+  Eigen::Matrix<double, 3, 1> m_globalY;
 
   template <int Dim>
   static std::array<double, Dim> StdDevMatrixToArray(
-      const Vector<Dim>& stdDevs);
+      const Eigen::Matrix<double, Dim, 1>& stdDevs);
 
   class State {
    public:

@@ -5,6 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
+#include <iostream>
 #include <limits>
 #include <random>
 
@@ -22,17 +23,38 @@
 #include "frc2/Timer.h"
 #include "gtest/gtest.h"
 
+TEST(DifferentialDrivePoseEstimatorTest, TestStraightLine) {
+  frc::DifferentialDrivePoseEstimator estimator{frc::Rotation2d(),
+                                                frc::Pose2d(),
+                                                {0.01, 0.01, 0.01, 0.01, 0.01},
+                                                {0.5, 0.5, 0.5},
+                                                {0.1, 0.1, 0.1}};
+
+  for (int i = 0; i < 100; i++) {
+    frc::Pose2d pose = estimator.UpdateWithTime(
+        i * 0.02_s, frc::Rotation2d(0_deg), {1_m / 1_s, 1_m / 1_s},
+        1_m * i * 0.02, 1_m * i * 0.02);
+    // std::cout << pose.Translation().X().to<double>() << ", "
+    //           << pose.Translation().Y().to<double>() << ", "
+    //           << pose.Rotation().Degrees().to<double>() << std::endl;
+  }
+}
+
 TEST(DifferentialDrivePoseEstimatorTest, TestAccuracy) {
-  frc::DifferentialDrivePoseEstimator estimator{
-      frc::Rotation2d(), frc::Pose2d(),
-      frc::MakeMatrix<5, 1>(0.01, 0.01, 0.01, 0.01, 0.01),
-      frc::MakeMatrix<3, 1>(0.1, 0.1, 0.1),
-      frc::MakeMatrix<3, 1>(0.1, 0.1, 0.1)};
+  frc::DifferentialDrivePoseEstimator estimator{frc::Rotation2d(),
+                                                frc::Pose2d(),
+                                                {0.01, 0.01, 0.01, 0.01, 0.01},
+                                                {0.5, 0.5, 0.5},
+                                                {0.1, 0.1, 0.1}};
 
   frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
-      std::vector{frc::Pose2d(), frc::Pose2d(20_m, 20_m, frc::Rotation2d()),
-                  frc::Pose2d(54_m, 54_m, frc::Rotation2d())},
-      frc::TrajectoryConfig(10_mps, 5.0_mps_sq));
+      std::vector{
+          frc::Pose2d(), frc::Pose2d(20_m, 20_m, frc::Rotation2d()),
+          frc::Pose2d(10_m, 10_m, 180_deg),
+          // frc::Pose2d(30_m, 30_m, 0_deg),
+          // frc::Pose2d(20_m, 20_m, 180_deg)
+      },
+      frc::TrajectoryConfig(2_mps, 3.0_mps_sq));
 
   frc::DifferentialDriveKinematics kinematics{1.0_m};
   frc::DifferentialDriveOdometry odometry{frc::Rotation2d()};
@@ -68,8 +90,8 @@ TEST(DifferentialDrivePoseEstimatorTest, TestAccuracy) {
       lastVisionPose =
           groundTruthState.pose +
           frc::Transform2d(
-              frc::Translation2d(distribution(generator) * 0.1 * 1_m,
-                                 distribution(generator) * 0.1 * 1_m),
+              frc::Translation2d(distribution(generator) * 0.5 * 1_m,
+                                 distribution(generator) * 0.5 * 1_m),
               frc::Rotation2d(distribution(generator) * 0.1 * 1_rad));
 
       lastVisionUpdateRealTimestamp = frc2::Timer::GetFPGATimestamp();
@@ -84,6 +106,13 @@ TEST(DifferentialDrivePoseEstimatorTest, TestAccuracy) {
         groundTruthState.pose.Rotation() +
             frc::Rotation2d(units::radian_t(distribution(generator) * 0.1)),
         input, leftDistance, rightDistance);
+
+    // std::cout << groundTruthState.pose.Translation().X().to<double>() << ", "
+    //           << groundTruthState.pose.Translation().Y().to<double>() << ", "
+    //           << groundTruthState.pose.Rotation().Degrees().to<double>() << ", "
+    //           << xhat.Translation().X().to<double>() << ", "
+    //           << xhat.Translation().Y().to<double>() << ", "
+    //           << xhat.Rotation().Degrees().to<double>() << ", " << std::endl;
 
     double error = groundTruthState.pose.Translation()
                        .Distance(xhat.Translation())
@@ -103,8 +132,8 @@ TEST(DifferentialDrivePoseEstimatorTest, TestAccuracy) {
             << std::endl;
   std::cout << "max error " << maxError << std::endl;
 
-  //  EXPECT_NEAR(0.0, errorSum / (trajectory.TotalTime().to<double>() /
-  //  dt.to<double>()),
-  //            0.2);
-  //  EXPECT_NEAR(0.0, maxError, 0.4);
+  EXPECT_NEAR(
+      0.0, errorSum / (trajectory.TotalTime().to<double>() / dt.to<double>()),
+      0.2);
+  EXPECT_NEAR(0.0, maxError, 0.4);
 }

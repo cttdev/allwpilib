@@ -12,17 +12,14 @@
 #include <Eigen/Core>
 #include <units/time.h>
 
-#include "frc/estimator/ExtendedKalmanFilter.h"
 #include "frc/estimator/KalmanFilterLatencyCompensator.h"
+#include "frc/estimator/UnscentedKalmanFilter.h"
 #include "frc/geometry/Pose2d.h"
 #include "frc/geometry/Rotation2d.h"
 #include "frc/kinematics/MecanumDriveKinematics.h"
 #include "frc2/Timer.h"
 
 namespace frc {
-
-template <int N>
-using Vector = Eigen::Matrix<double, N, 1>;
 
 /**
  * This class wraps an ExtendedKalmanFilter to fuse latency-compensated vision
@@ -70,13 +67,13 @@ class MecanumDrivePoseEstimator {
    * @param nominalDt                The time in seconds between each robot
    *                                 loop.
    */
-  MecanumDrivePoseEstimator(const Rotation2d& gyroAngle,
-                            const Pose2d& initialPose,
-                            MecanumDriveKinematics kinematics,
-                            const Vector<3>& stateStdDevs,
-                            const Vector<1>& localMeasurementStdDevs,
-                            const Vector<3>& visionMeasurementStdDevs,
-                            units::second_t nominalDt = 0.02_s);
+  MecanumDrivePoseEstimator(
+      const Rotation2d& gyroAngle, const Pose2d& initialPose,
+      MecanumDriveKinematics kinematics,
+      const std::array<double, 3>& stateStdDevs,
+      const std::array<double, 1>& localMeasurementStdDevs,
+      const std::array<double, 3>& visionMeasurementStdDevs,
+      units::second_t nominalDt = 0.02_s);
 
   /**
    * Resets the robot's position on the field.
@@ -147,11 +144,13 @@ class MecanumDrivePoseEstimator {
                         const MecanumDriveWheelSpeeds& wheelSpeeds);
 
  private:
-  ExtendedKalmanFilter<4, 3, 2> m_observer;
+  UnscentedKalmanFilter<4, 3, 2> m_observer;
   MecanumDriveKinematics m_kinematics;
-  KalmanFilterLatencyCompensator<4, 3, 2, ExtendedKalmanFilter<4, 3, 2>>
+  KalmanFilterLatencyCompensator<4, 3, 2, UnscentedKalmanFilter<4, 3, 2>>
       m_latencyCompensator;
-  std::function<void(const Vector<3>& u, const Vector<4>& y)> m_visionCorrect;
+  std::function<void(const Eigen::Matrix<double, 3, 1>& u,
+                     const Eigen::Matrix<double, 4, 1>& y)>
+      m_visionCorrect;
 
   Eigen::Matrix4d m_visionDiscR;
 
@@ -161,17 +160,27 @@ class MecanumDrivePoseEstimator {
   Rotation2d m_gyroOffset;
   Rotation2d m_previousAngle;
 
-  static Vector<4> F(const Vector<4>& x, const Vector<3>& u);
+  static Eigen::Matrix<double, 4, 1> F(const Eigen::Matrix<double, 4, 1>& x,
+                                       const Eigen::Matrix<double, 3, 1>& u);
 
-  template <int Dim>
-  static std::array<double, Dim> StdDevMatrixToArray(
-      const Vector<Dim>& vector) {
-    std::array<double, Dim> array;
-    for (size_t i = 0; i < Dim; ++i) {
-      array[i] = vector(i);
-    }
-    return array;
+  std::array<double, 3> m_stateStdDevs;
+  std::array<double, 1> m_localMeasurementStdDevs;
+  std::array<double, 3> m_visionMeasurementStdDevs;
+
+  static std::array<double, 4> MakeQDiagonals(
+      const std::array<double, 3>& stdDevs,
+      const Eigen::Matrix<double, 4, 1>& x) {
+    // Std dev in [x, y, std::cos(theta), std::sin(theta)] form.
+    return {stdDevs[0], stdDevs[1], stdDevs[2] * x(2), stdDevs[2] * x(3)};
   }
+
+  static std::array<double, 2> MakeRDiagonals(
+      const std::array<double, 1>& stdDevs,
+      const Eigen::Matrix<double, 4, 1>& x);
+
+  static std::array<double, 4> MakeVisionRDiagonals(
+      const std::array<double, 3>& stdDevs,
+      const Eigen::Matrix<double, 4, 1>& y);
 };
 
 }  // namespace frc

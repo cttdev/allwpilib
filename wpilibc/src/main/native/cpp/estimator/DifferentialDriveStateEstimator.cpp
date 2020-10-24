@@ -13,35 +13,37 @@
 using namespace frc;
 
 DifferentialDriveStateEstimator::DifferentialDriveStateEstimator(
-    const LinearSystem<2, 2, 2>& plant, const Eigen::Matrix<double, 10, 1>& initialState,
-    const Eigen::Matrix<double, 10, 1>& stateStdDevs, const Eigen::Matrix<double, 3, 1>& localMeasurementStdDevs,
-    const Eigen::Matrix<double, 3, 1>& globalMeasurementStdDevs,
+    const LinearSystem<2, 2, 2>& plant,
+    const std::array<double, 10>& initialState,
+    const std::array<double, 10>& stateStdDevs,
+    const std::array<double, 3>& localMeasurementStdDevs,
+    const std::array<double, 3>& globalMeasurementStdDevs,
     const DifferentialDriveKinematics& kinematics, units::second_t nominalDt)
     : m_plant(plant),
       m_rb(kinematics.trackWidth / 2.0),
       m_observer([this](auto& x, auto& u) { return Dynamics(x, u); },
                  &DifferentialDriveStateEstimator::LocalMeasurementModel,
-                 StdDevMatrixToArray<10>(stateStdDevs),
-                 StdDevMatrixToArray<3>(localMeasurementStdDevs), nominalDt),
+                 stateStdDevs, localMeasurementStdDevs, nominalDt),
       m_nominalDt(nominalDt) {
   m_localY.setZero();
   m_globalY.setZero();
 
   // Create R (covariances) for global measurements.
   Eigen::Matrix<double, 3, 3> globalContR =
-      frc::MakeCovMatrix(StdDevMatrixToArray<3>(globalMeasurementStdDevs));
+      frc::MakeCovMatrix(globalMeasurementStdDevs);
 
   Eigen::Matrix<double, 3, 3> globalDiscR =
       frc::DiscretizeR<3>(globalContR, m_nominalDt);
 
   // Create correction mechanism for global measurements.
-  m_globalCorrect = [&](const Eigen::Matrix<double, 2, 1>& u, const Eigen::Matrix<double, 3, 1>& y) {
+  m_globalCorrect = [&](const Eigen::Matrix<double, 2, 1>& u,
+                        const Eigen::Matrix<double, 3, 1>& y) {
     m_observer.Correct<3>(
         u, y, &DifferentialDriveStateEstimator::GlobalMeasurementModel,
         globalDiscR);
   };
 
-  Reset(initialState);
+  Reset(ArrayToVector<10>(initialState));
 }
 
 void DifferentialDriveStateEstimator::ApplyPastGlobalMeasurement(
@@ -51,28 +53,30 @@ void DifferentialDriveStateEstimator::ApplyPastGlobalMeasurement(
                                                m_globalCorrect, timestamp);
 }
 
-Vector<10> DifferentialDriveStateEstimator::GetEstimatedState() const {
+Eigen::Matrix<double, 10, 1>
+DifferentialDriveStateEstimator::GetEstimatedState() const {
   return m_observer.Xhat();
 }
 
 frc::Pose2d DifferentialDriveStateEstimator::GetEstimatedPosition() {
-  Vector<10> xHat = GetEstimatedState();
+  Eigen::Matrix<double, 10, 1> xHat = GetEstimatedState();
   return frc::Pose2d(
-    units::meter_t(xHat(State::kX, 0)),
-    units::meter_t(xHat(State::kY, 0)),
-    frc::Rotation2d(units::radian_t(xHat(State::kHeading, 0))));
+      units::meter_t(xHat(State::kX, 0)), units::meter_t(xHat(State::kY, 0)),
+      frc::Rotation2d(units::radian_t(xHat(State::kHeading, 0))));
 }
 
-Vector<10> DifferentialDriveStateEstimator::Update(
+Eigen::Matrix<double, 10, 1> DifferentialDriveStateEstimator::Update(
     units::radian_t heading, units::meter_t leftPosition,
-    units::meter_t rightPosition, const Eigen::Matrix<double, 2, 1>& controlInput) {
+    units::meter_t rightPosition,
+    const Eigen::Matrix<double, 2, 1>& controlInput) {
   return UpdateWithTime(heading, leftPosition, rightPosition, controlInput,
                         frc2::Timer::GetFPGATimestamp());
 }
 
-Vector<10> DifferentialDriveStateEstimator::UpdateWithTime(
+Eigen::Matrix<double, 10, 1> DifferentialDriveStateEstimator::UpdateWithTime(
     units::radian_t heading, units::meter_t leftPosition,
-    units::meter_t rightPosition, const Eigen::Matrix<double, 2, 1>& controlInput,
+    units::meter_t rightPosition,
+    const Eigen::Matrix<double, 2, 1>& controlInput,
     units::second_t currentTime) {
   auto dt = m_prevTime >= 0_s ? currentTime - m_prevTime : m_nominalDt;
   m_prevTime = currentTime;
@@ -90,7 +94,8 @@ Vector<10> DifferentialDriveStateEstimator::UpdateWithTime(
   return GetEstimatedState();
 }
 
-void DifferentialDriveStateEstimator::Reset(const Eigen::Matrix<double, 10, 1>& initialState) {
+void DifferentialDriveStateEstimator::Reset(
+    const Eigen::Matrix<double, 10, 1>& initialState) {
   m_observer.Reset();
 
   m_observer.SetXhat(initialState);
@@ -98,8 +103,9 @@ void DifferentialDriveStateEstimator::Reset(const Eigen::Matrix<double, 10, 1>& 
 
 void DifferentialDriveStateEstimator::Reset() { m_observer.Reset(); }
 
-Vector<10> DifferentialDriveStateEstimator::Dynamics(const Eigen::Matrix<double, 10, 1>& x,
-                                                     const Eigen::Matrix<double, 2, 1>& u) {
+Eigen::Matrix<double, 10, 1> DifferentialDriveStateEstimator::Dynamics(
+    const Eigen::Matrix<double, 10, 1>& x,
+    const Eigen::Matrix<double, 2, 1>& u) {
   Eigen::Matrix<double, 4, 2> B;
   B.block<2, 2>(0, 0) = m_plant.B();
   B.block<2, 2>(2, 0).setZero();
@@ -124,8 +130,10 @@ Vector<10> DifferentialDriveStateEstimator::Dynamics(const Eigen::Matrix<double,
   return result;
 }
 
-Vector<3> DifferentialDriveStateEstimator::LocalMeasurementModel(
-    const Eigen::Matrix<double, 10, 1>& x, const Eigen::Matrix<double, 2, 1>& u) {
+Eigen::Matrix<double, 3, 1>
+DifferentialDriveStateEstimator::LocalMeasurementModel(
+    const Eigen::Matrix<double, 10, 1>& x,
+    const Eigen::Matrix<double, 2, 1>& u) {
   static_cast<void>(u);
 
   Eigen::Matrix<double, 3, 1> y;
@@ -134,8 +142,10 @@ Vector<3> DifferentialDriveStateEstimator::LocalMeasurementModel(
   return y;
 }
 
-Vector<3> DifferentialDriveStateEstimator::GlobalMeasurementModel(
-    const Eigen::Matrix<double, 10, 1>& x, const Eigen::Matrix<double, 2, 1>& u) {
+Eigen::Matrix<double, 3, 1>
+DifferentialDriveStateEstimator::GlobalMeasurementModel(
+    const Eigen::Matrix<double, 10, 1>& x,
+    const Eigen::Matrix<double, 2, 1>& u) {
   static_cast<void>(u);
 
   Eigen::Matrix<double, 3, 1> y;

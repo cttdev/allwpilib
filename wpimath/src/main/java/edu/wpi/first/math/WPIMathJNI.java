@@ -69,10 +69,20 @@ public final class WPIMathJNI {
    * Computes the matrix exp.
    *
    * @param src  Array of elements of the matrix to be exponentiated.
-   * @param rows how many rows there are.
+   * @param rows How many rows there are.
    * @param dst  Array where the result will be stored.
    */
   public static native void exp(double[] src, int rows, double[] dst);
+
+  /**
+   * Computes the lower-left triangular matrix decomposition.
+   *
+   * @param src  Array of elements of the matrix to be decomposed.
+   * @param rows How many rows there are.
+   * @param columns How many columns there are.
+   * @param dst  Array where the result will be stored.
+   */
+  public static native void llt(double[] src, int rows, int columns, double[] dst);
 
   /**
    * Returns true if (A, B) is a stabilizable pair.

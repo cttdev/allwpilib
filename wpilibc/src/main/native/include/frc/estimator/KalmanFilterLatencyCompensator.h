@@ -7,12 +7,14 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <functional>
 #include <utility>
 #include <vector>
 
 #include <Eigen/Core>
+#include <units/math.h>
 #include <units/time.h>
 
 namespace frc {
@@ -53,7 +55,8 @@ class KalmanFilterLatencyCompensator {
   void ApplyPastMeasurement(
       KalmanFilterType* observer, units::second_t nominalDt,
       Eigen::Matrix<double, Rows, 1> y,
-      std::function<void(const Eigen::Matrix<double, Inputs, 1>& u, const Eigen::Matrix<double, Rows, 1>& y)>
+      std::function<void(const Eigen::Matrix<double, Inputs, 1>& u,
+                         const Eigen::Matrix<double, Rows, 1>& y)>
           globalMeasurementCorrect,
       units::second_t timestamp) {
     if (m_pastObserverSnapshots.size() == 0) {
@@ -68,8 +71,9 @@ class KalmanFilterLatencyCompensator {
 
     // This index starts at one because we use the previous state later on, and
     // we always want to have a "previous state".
+    int maxIdx = m_pastObserverSnapshots.size() - 1;
     int low = 1;
-    int high = m_pastObserverSnapshots.size() - 1;
+    int high = std::max(maxIdx, 1);
 
     while (low != high) {
       int mid = (low + high) / 2.0;

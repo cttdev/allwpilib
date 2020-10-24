@@ -355,7 +355,7 @@ public class Matrix<R extends Num, C extends Num> {
    * This method only works for square matrices, and will
    * otherwise throw an {@link MatrixDimensionException}.
    *
-   * @return The exponential of A.
+   * @return The exponential of this matrix.
    */
   public final Matrix<R, C> exp() {
     if (this.getNumRows() != this.getNumCols()) {
@@ -364,6 +364,18 @@ public class Matrix<R extends Num, C extends Num> {
     }
     Matrix<R, C> toReturn = new Matrix<>(new SimpleMatrix(this.getNumRows(), this.getNumCols()));
     WPIMathJNI.exp(this.m_storage.getDDRM().getData(), this.getNumRows(),
+          toReturn.m_storage.getDDRM().getData());
+    return toReturn;
+  }
+
+  /**
+   * Computes the lower-left triangular matrix decomposition using Eigen's solver.
+   *
+   * @return The decomposition of this matrix.
+   */
+  public final Matrix<R, C> llt() {
+    Matrix<R, C> toReturn = new Matrix<>(new SimpleMatrix(this.getNumRows(), this.getNumCols()));
+    WPIMathJNI.llt(this.m_storage.getDDRM().getData(), this.getNumRows(), this.getNumCols(),
           toReturn.m_storage.getDDRM().getData());
     return toReturn;
   }
@@ -527,6 +539,15 @@ public class Matrix<R extends Num, C extends Num> {
 
     CholeskyDecomposition_F64<DMatrixRMaj> chol =
             DecompositionFactory_DDRM.chol(temp.numRows(), lowerTriangular);
+
+    for(int i = 0; i < temp.numRows(); i++) {
+      for(int j = 0; j < temp.numCols(); j++) {
+        if(temp.get(i, j) < 0) {
+          temp.set(i, j, 0);
+        }
+      }
+    }
+
     if (!chol.decompose(temp.getMatrix())) {
       // check that the input is not all zeros -- if they are, we special case and return all
       // zeros.
